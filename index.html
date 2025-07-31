@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الأسئلة</title>
+    <link rel="stylesheet" href="game.css">
+</head>
+<body>
+    <div class="game-container">
+
+        <div class="screen" id="main-screen">
+            <div class="main-content">
+                <img class="main-logo" src="logogame.png" alt="شعار اللعبة">
+                <div id="main-screen-buttons">
+                    <button id="startGameBtn">افتح ميدان جديد</button>
+                </div>
+
+                <div class="intro-content">
+                    <div class="intro-image-wrapper">
+                        <img src="taht.jpg" alt="صورة توضيحية" class="intro-image">
+                    </div>
+                    <div class="intro-text-wrapper">
+                        <p class="disclaimer"> سعر الميدان الواحد بنص دينار كويتي، أنا مسامح إنك تلعب لو ما عندك.. ومسامح انك تلعب وتدفع بعدين ومض 👀
+                        </p>
+                        <div class="payment-info">
+                            <p>
+                                رقم تحويل ومض 55941040 باسم sultan
+                                <br>
+                                <strong>- يتم تحديث الأسئلة بشكل يومي لكم✌️</strong>
+                                 <br>
+                                 <strong>- أول ميدانين لك مجانيين🤩</strong>
+                                 <br>
+                                <strong>- إذا أرسلت دينار يعني تلعب لعبتين</strong>
+                                <br>
+                                <strong>- إذا أرسلت ١٠ دنانير تقدر تلعب ٢٠ لعبة وهكذا</strong>
+                                <br>
+                                <strong>- تقدر تلعب وتدفع بعدين بأي وقت💸</strong>
+                                <br>
+                                <strong>مافي شي يمنعك تلعب اذا مو ناوي تدفع.. الا ضميرك🙂</strong>
+                                <br>
+                                <strong>استمتعوو بوقتكم❤️</strong>
+
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="category-selection-screen" class="screen" style="display: none;">
+            <h2>اختر ٦ أقسام لبدء اللعبة</h2>
+            <div id="categories-grid" class="categories-grid">
+            </div>
+            <button id="nextBtn" disabled>التالي</button>
+        </div>
+
+        <div id="team-setup-screen" class="screen exciting-setup" style="display: none;">
+            <h2>إعدادات اللعبة</h2>
+            <p class="setup-subtitle">أدخل أسماء الفرق واختر خيارات اللعب</p>
+            
+            <div class="setup-inputs">
+                <div class="team-input-group">
+                    <label for="team1Name">اسم الفريق الأول:</label>
+                    <input type="text" id="team1Name" placeholder="أدخل اسم الفريق الأول" class="styled-input">
+                </div>
+                <div class="team-input-group">
+                    <label for="team2Name">اسم الفريق الثاني:</label>
+                    <input type="text" id="team2Name" placeholder="أدخل اسم الفريق الثاني" class="styled-input">
+                </div>
+            </div>
+
+            <div class="timer-option">
+                <label class="timer-label">
+                    <input type="checkbox" id="timerCheckbox"> إضافة مؤقت
+                </label>
+            </div>
+            <div id="timer-input-area" class="timer-details" style="display: none;">
+                <label for="timerInput">عدد الثواني لكل سؤال:</label>
+                <input type="number" id="timerInput" value="30" min="5" class="styled-input">
+            </div>
+
+            <div class="setting-item">
+                <label class="switch">
+                    <input type="checkbox" id="deductionCheckbox">
+                    <span class="slider round"></span>
+                </label>
+                <label for="deductionCheckbox" class="switch-label">خصم نقاط على الإجابة الخاطئة</label>
+            </div>
+
+            <div id="deduction-input-area" class="input-area" style="display:none;">
+                <label for="deductionInput">قيمة الخصم:</label>
+                <input type="number" id="deductionInput" value="50" min="0">
+                <small>سيتم خصم هذه النقاط عند الإجابة الخاطئة.</small>
+            </div>
+
+            <button id="startPlayBtn" class="styled-button">بدء اللعبة</button>
+        </div>
+
+        <section id="first-team-selection-screen" class="screen" style="display: none;">
+            <h2>من سيبدأ اللعب؟</h2>
+            <div id="first-team-container">
+                <button id="team1StartBtn" class="team-start-btn"></button>
+                <button id="team2StartBtn" class="team-start-btn"></button>
+            </div>
+        </section>
+
+        <section id="game-play-screen" class="screen" style="display: none;">
+            <div id="game-header-top">
+                <div class="scores-display">
+                    <p id="team1Score"></p>
+                    <p id="team2Score"></p>
+                </div>
+                <h2 id="currentTeamName"></h2>
+            </div>
+            <div id="categories-buttons-grid" class="game-categories-grid">
+            </div>
+        </section>
+
+        <div id="question-screen" class="screen" style="display: none;">
+            <h3 id="questionTeamName"></h3>
+            <h3 id="questionTimerDisplay"></h3>
+            <div id="question-content" class="question-content-container">
+    </div>
+            <div id="choices-area">
+                <button id="revealChoicesBtn">اختيارات</button>
+                <div id="multiple-choices" class="choices-grid">
+                </div>
+            </div>
+            <div class="question-actions">
+                <button id="challengeBtn">تحدي</button>
+                <button id="answerBtn">الجواب</button>
+            </div>
+        </div>
+
+        <div id="answer-screen" class="screen" style="display: none;">
+            <h2>الجواب الصحيح:</h2>
+            <div id="answer-content" class="question-content-container">
+    </div>
+            <div class="answer-actions">
+                <button id="correctBtn">صح</button>
+                <button id="wrongBtn">خطأ</button>
+            </div>
+        </div>
+
+<div id="end-game-screen" class="screen" style="display: none;">
+    <div class="end-game-container">
+        <h2 id="end-game-title"></h2>
+        <div id="winner-name-display" class="winner-name-display"></div>
+        
+        <div class="score-cards-container">
+            <div id="team1-score-card" class="score-card">
+                <h3 id="team1-name-end-screen"></h3>
+                <p id="team1-final-score"></p>
+            </div>
+            <div id="team2-score-card" class="score-card">
+                <h3 id="team2-name-end-screen"></h3>
+                <p id="team2-final-score"></p>
+            </div>
+        </div>
+        
+        <button id="endGameBtn" class="new-game-btn">افتح ميدان جديد</button>
+    </div>
+</div>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="game.js"></script>
+
+    <div id="custom-alert-modal" class="modal">
+        <div class="modal-content">
+            <p id="custom-alert-message"></p>
+            <button id="custom-alert-ok-btn">حسناً</button>
+            <button id="custom-alert-cancel-btn" style="display:none;">إلغاء</button>
+        </div>
+    </div>
+
+    <div id="challenge-modal" class="modal">
+        <div class="modal-content">
+            <p>على الفريق المقابل اختيار تحدي يقوم به شخص أو عدة أشخاص من الفريق الحالي</p>
+            <div class="modal-buttons">
+                <button id="challenge-complete-btn">تم التحدي</button>
+                <button id="challenge-cancel-btn">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
