@@ -1,0 +1,309 @@
+/* Arabic Font */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+/* General Styles */
+body {
+    font-family: 'Cairo', sans-serif;
+    direction: rtl;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #f0f4f8, #c8d8e4);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    width: 95%;
+    max-width: 1200px;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+    text-align: center;
+    color: #4a4a4a;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    border-bottom: 3px solid #5d9cec;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+h2 {
+    color: #5d9cec;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 5px;
+}
+
+/* Card Styles */
+.card {
+    background-color: #f7f9fc;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Form Elements */
+input[type="text"],
+input[type="file"],
+input[type="number"],
+button {
+    font-family: 'Cairo', sans-serif;
+    font-size: 1rem;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    width: calc(100% - 24px);
+    box-sizing: border-box;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+    outline: none;
+    border-color: #5d9cec;
+    box-shadow: 0 0 8px rgba(93, 156, 236, 0.3);
+}
+
+button {
+    background-color: #5d9cec;
+    color: #ffffff;
+    cursor: pointer;
+    border: none;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background-color: #4a90e2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(93, 156, 236, 0.4);
+}
+
+/* Buttons for specific actions */
+#addCatalogBtn, #uploadZipBtn, #publishBtn, .edit-catalog-btn, .delete-catalog-btn, #deleteAllQuestionsBtn {
+    width: auto;
+    padding: 10px 20px;
+    margin-left: 10px;
+    margin-bottom: 0;
+}
+
+
+/* New: Table Actions */
+.table-actions {
+    display: flex;
+    justify-content: flex-end; /* لترتيب الأزرار إلى اليسار */
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#publishBtn {
+    background-color: #2ecc71;
+    margin-left: 10px;
+}
+#publishBtn:hover {
+    background-color: #27ae60;
+}
+
+#deleteAllQuestionsBtn {
+    background-color: #e74c3c;
+}
+
+#deleteAllQuestionsBtn:hover {
+    background-color: #c0392b;
+}
+
+
+#addCatalogBtn { background-color: #5d9cec; }
+#addCatalogBtn:hover { background-color: #4a90e2; }
+
+.edit-catalog-btn { background-color: #f39c12; color: #fff; }
+.edit-catalog-btn:hover { background-color: #e67e22; }
+
+.delete-catalog-btn { background-color: #e74c3c; color: #fff; }
+.delete-catalog-btn:hover { background-color: #c0392b; }
+
+#uploadZipBtn, #publishBtn {
+    background-color: #2ecc71;
+}
+#uploadZipBtn:hover, #publishBtn:hover {
+    background-color: #27ae60;
+}
+
+/* Catalogs List */
+#catalogsList ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+#catalogsList li {
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: calc(33.333% - 10px);
+    box-sizing: border-box;
+}
+
+#catalogsList li img {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+#catalogsList li span {
+    flex-grow: 1;
+    font-weight: bold;
+    color: #34495e;
+}
+
+/* Table Styles */
+#questionsTableContainer {
+    overflow-x: auto;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+#questionsTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+#questionsTable thead {
+    background-color: #5d9cec;
+    color: #ffffff;
+}
+
+#questionsTable th, #questionsTable td {
+    padding: 12px 15px;
+    text-align: right;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#questionsTable tbody tr:hover {
+    background-color: #f0f8ff;
+}
+
+#questionsTable input[type="text"], #questionsTable input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin: 0;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+    text-align: right;
+}
+
+.close-btn {
+    color: #aaa;
+    position: absolute;
+    top: 15px;
+    left: 25px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: #333;
+    text-decoration: none;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #5d9cec;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    #catalogsList li {
+        width: calc(50% - 10px);
+    }
+}
+
+@media (max-width: 480px) {
+    #catalogsList li {
+        width: 100%;
+    }
+}
+
+/* تنسيق ملفات الميديا في اللعبة */
+.question-media-container {
+    /* يجعل العناصر تتراص عمودياً */
+    display: flex; 
+    flex-direction: column;
+    align-items: center; /* لتوسيط الميديا */
+    margin-top: 20px;
+}
+
+.question-media-container img,
+.question-media-container video,
+.question-media-container audio {
+    max-width: 100%; /* يجعل الميديا تتناسب مع حجم الشاشة */
+    max-height: 45vh; /* يحدد أقصى ارتفاع للميديا (45% من ارتفاع الشاشة) */
+    width: auto;
+    height: auto;
+    border-radius: 8px; /* لإضافة حواف دائرية جمالية */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* لإضافة ظل خفيف */
+}

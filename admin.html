@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المدير</title>
+    <link rel="stylesheet" href="admin.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLyoIoXp2aJCnhFqIFufMVBz0fzCS-FYY",
+            authDomain: "game-303eb.firebaseapp.com",
+            databaseURL: "https://game-303eb-default-rtdb.firebaseio.com", 
+            projectId: "game-303eb",
+            storageBucket: "game-303eb.firebasestorage.app",
+            messagingSenderId: "Y22261863844",
+            appId: "1:22261863844:web:66f8541079b9025ec69d31"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+</head>
+<body>
+
+    <header>
+        <div class="logo">لوحة تحكم المدير</div>
+        <nav>
+            <ul>
+                <li><a href="#catalogs-section">الكتالوجات</a></li>
+                <li><a href="#questions-section">إضافة أسئلة</a></li>
+                <li><a href="#manage-questions-section">إدارة الأسئلة المنشورة</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        
+        <section id="catalogs-section" class="card">
+            <h2>إضافة كتالوج جديد</h2>
+            <form id="addCatalogForm">
+                <div>
+                    <label for="catalogName">اسم الكتالوج:</label>
+                    <input type="text" id="catalogName" required>
+                </div>
+                <div>
+                    <label for="catalogImage">صورة الكتالوج:</label>
+                    <input type="file" id="catalogImage" accept="image/*" required>
+                </div>
+                <div>
+                    <label for="catalogDescription">وصف الكتالوج:</label>
+                    <textarea id="catalogDescription" placeholder="أدخل وصف الكتالوج هنا..."></textarea>
+                </div>
+                <button id="addCatalogBtn" type="button">إضافة كتالوج</button>
+            </form>
+
+            <div id="catalogsList">
+                <h3>الكتالوجات الحالية</h3>
+            </div>
+        </section>
+
+        <section id="questions-section" class="card">
+            <h2>إضافة أسئلة من ملف ZIP</h2>
+            <div class="file-upload">
+                <input type="file" id="zipFile" accept=".zip">
+                <button id="uploadZipBtn" type="button">تحميل وتحليل الملف</button>
+            </div>
+        </section>
+
+        <section id="questions-table-section" class="card">
+            <h2>الأسئلة المحللة (غير منشورة بعد)</h2>
+            <div class="table-container">
+                <table id="questionsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>السؤال</th>
+                            <th>الجواب</th>
+                            <th>الخيارات الخاطئة</th>
+                            <th>الكتالوج</th>
+                            <th>النقاط</th>
+                            <th>ميديا السؤال</th>
+                            <th>ميديا الجواب</th>
+                            <th>الإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="actions">
+                <button id="publishBtn" type="button">نشر الأسئلة</button>
+                <button id="deleteAllQuestionsBtn" type="button">مسح الجدول</button>
+            </div>
+        </section>
+
+        <section id="manage-questions-section" class="card">
+            <h2>إدارة الأسئلة المنشورة</h2>
+            <div class="filter-controls">
+                <label for="catalogFilter">تصفية حسب الكتالوج:</label>
+                <select id="catalogFilter">
+                    <option value="all">كل الكتالوجات</option>
+                </select>
+                <button id="deleteSelectedCatalogBtn">حذف أسئلة الكتالوج المحدد</button>
+                <button id="deleteAllPublishedQuestionsBtn">حذف جميع الأسئلة المنشورة</button>
+            </div>
+            <div class="table-container">
+                <table id="publishedQuestionsTable">
+<thead>
+    <tr>
+        <th>#</th>
+        <th>السؤال</th>
+        <th>الجواب</th>
+        <th>الخيارات الخاطئة</th>
+        <th>الكتالوج</th>
+        <th>النقاط</th>
+        <th>ميديا السؤال</th>
+        <th>ميديا الجواب</th>
+        <th>الإجراءات</th>
+    </tr>
+    <tr>
+        <th></th>
+        <th><input type="text" id="questionSearch" placeholder="بحث عن سؤال..."></th>
+        <th><input type="text" id="answerSearch" placeholder="بحث عن جواب..."></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+</thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+    </main>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>تعديل الكتالوج</h2>
+        <form id="editCatalogForm">
+            <input type="hidden" id="editCatalogId">
+            <div>
+                <label for="editCatalogName">اسم الكتالوج الجديد:</label>
+                <input type="text" id="editCatalogName">
+            </div>
+            <div>
+                <label for="editCatalogImage">صورة جديدة (اختياري):</label>
+                <input type="file" id="editCatalogImage" accept="image/*">
+            </div>
+            <div>
+                <label for="editCatalogDescriptionInput">وصف الكتالوج:</label>
+                <textarea id="editCatalogDescriptionInput" placeholder="أدخل وصف الكتالوج هنا..."></textarea>
+            </div>
+            <button id="saveEditBtn" type="button">حفظ التعديلات</button>
+        </form>
+    </div>
+</div>
+    
+    <script src="admin.js"></script>
+    
+</body>
+</html>
