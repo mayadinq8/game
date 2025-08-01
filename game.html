@@ -3,190 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ميادين</title>
+    <title>ميادين - أسئلة ومسابقات</title>
     <link rel="stylesheet" href="game.css">
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
-    <script src="firebase-config.js"></script>
 </head>
 <body>
-
     <div class="game-container">
-        <div id="main-screen" class="screen active">
-            <img src="logogame.png" alt="شعار اللعبة" class="main-logo">
-            <button id="startGameBtn">ابدأ اللعبة</button>
+
+        <div class="screen" id="main-screen">
+            <div class="main-content">
+                <img class="main-logo" src="logogame.png" alt="شعار اللعبة">
+                <div id="main-screen-buttons">
+                    <button id="startGameBtn">افتح ميدان جديد</button>
+                </div>
+
+                <div class="intro-content">
+                    <div class="intro-image-wrapper">
+                        <img src="taht.jpg" alt="صورة توضيحية" class="intro-image">
+                    </div>
+                    <div class="intro-text-wrapper">
+                        <p class="disclaimer"> سعر الميدان الواحد بنص دينار كويتي، أنا مسامح إنك تلعب لو ما عندك.. ومسامح انك تلعب وتدفع بعدين ومض 👀
+                        </p>
+                        <div class="payment-info">
+                            <p>
+                                رقم تحويل ومض 55941040 باسم sultan
+                                <br>
+                                <strong>- يتم تحديث الأسئلة بشكل يومي لكم✌️</strong>
+                                <br>
+                                <strong>- أول ميدانين لك مجانيين🤩</strong>
+                                <br>
+                                <strong>- إذا أرسلت دينار يعني تلعب لعبتين</strong>
+                                <br>
+                                <strong>- إذا أرسلت ١٠ دنانير تقدر تلعب ٢٠ لعبة وهكذا</strong>
+                                <br>
+                                <strong>- تقدر تلعب وتدفع بعدين بأي وقت💸</strong>
+                                <br>
+                                <strong>مافي شي يمنعك تلعب اذا مو ناوي تدفع.. الا ضميرك🙂</strong>
+                                <br>
+                                <strong>استمتعوو بوقتكم❤️</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div id="category-selection-screen" class="screen">
-            <h2>اختر 6 كتالوجات</h2>
-            <div id="categories-grid" class="categories-grid"></div>
+        <div id="category-selection-screen" class="screen" style="display: none;">
+            <h2>اختر ٦ أقسام لبدء اللعبة</h2>
+            <div id="categories-grid" class="categories-grid">
+            </div>
             <button id="nextBtn" disabled>التالي</button>
         </div>
 
-        <div id="team-setup-screen" class="screen">
+        <div id="team-setup-screen" class="screen exciting-setup" style="display: none;">
             <h2>إعدادات اللعبة</h2>
-
-            <div class="setup-option">
-                <label for="gameModeSelection">نظام اللعب:</label>
-                <select id="gameModeSelection">
-                    <option value="turnBased">كل فريق له دور</option>
-                    <option value="firstToAnswer">اللي يجاوب أول</option>
-                </select>
-            </div>
-
-            <div class="setup-option">
-                <label for="team1Name">اسم الفريق الأول:</label>
-                <input type="text" id="team1Name" placeholder="الفريق الأول">
-            </div>
+            <p class="setup-subtitle">أدخل أسماء الفرق واختر خيارات اللعب</p>
             
-            <div class="setup-option">
-                <label for="team2Name">اسم الفريق الثاني:</label>
-                <input type="text" id="team2Name" placeholder="الفريق الثاني">
+            <div class="play-mode-options" id="play-mode-selection">
+                <h3>نظام اللعب:</h3>
+                <div class="play-mode-option">
+                    <label for="turnBased">كل فريق له دور</label>
+                    <input type="radio" id="turnBased" name="play-mode" value="turnBased" checked>
+                </div>
+                <div class="play-mode-option">
+                    <label for="answerFirst">اللي يجاوب أول</label>
+                    <input type="radio" id="answerFirst" name="play-mode" value="answerFirst">
+                </div>
             </div>
-
-            <div class="setup-option">
-                <label for="timerCheckbox">تفعيل المؤقت:</label>
-                <input type="checkbox" id="timerCheckbox">
-                <div id="timer-input-area" class="input-area" style="display: none;">
-                    <label for="timerInput">مدة المؤقت (بالثواني):</label>
-                    <input type="number" id="timerInput" value="30" min="10">
+            <div class="setup-inputs">
+                <div class="team-input-group">
+                    <label for="team1Name">اسم الفريق الأول:</label>
+                    <input type="text" id="team1Name" placeholder="أدخل اسم الفريق الأول" class="styled-input">
+                </div>
+                <div class="team-input-group">
+                    <label for="team2Name">اسم الفريق الثاني:</label>
+                    <input type="text" id="team2Name" placeholder="أدخل اسم الفريق الثاني" class="styled-input">
                 </div>
             </div>
 
-            <div class="setup-option">
-                <label for="deductionCheckbox">تفعيل خصم النقاط:</label>
-                <input type="checkbox" id="deductionCheckbox">
-                <div id="deduction-input-area" class="input-area" style="display: none;">
-                    <label for="deductionInput">قيمة الخصم:</label>
-                    <input type="number" id="deductionInput" value="50" min="0">
-                </div>
+            <div class="timer-option">
+                <label class="timer-label">
+                    <input type="checkbox" id="timerCheckbox"> إضافة مؤقت
+                </label>
+            </div>
+            <div id="timer-input-area" class="timer-details" style="display: none;">
+                <label for="timerInput">عدد الثواني لكل سؤال:</label>
+                <input type="number" id="timerInput" value="30" min="5" class="styled-input">
             </div>
 
-            <button id="startPlayBtn">ابدأ اللعبة</button>
-        </div>
-        
-        <div id="first-team-selection-screen" class="screen">
-            <h2 id="first-team-selection-title"></h2>
-            
-            <div class="team-setup-container">
-                <div class="team-setup-item">
-                    <h3 id="team1NameDisplay"></h3>
-                    <div class="color-picker-container">
-                        <button class="color-selector" id="team1ColorSelector">اختيار اللون</button>
-                    </div>
-                    <button class="team-start-btn" id="team1StartBtn"></button>
-                </div>
-                <div class="team-setup-item">
-                    <h3 id="team2NameDisplay"></h3>
-                    <div class="color-picker-container">
-                        <button class="color-selector" id="team2ColorSelector">اختيار اللون</button>
-                    </div>
-                    <button class="team-start-btn" id="team2StartBtn"></button>
-                </div>
+            <div class="setting-item">
+                <label class="switch">
+                    <input type="checkbox" id="deductionCheckbox">
+                    <span class="slider round"></span>
+                </label>
+                <label for="deductionCheckbox" class="switch-label">خصم نقاط على الإجابة الخاطئة</label>
             </div>
 
-            <button id="startGameFirstToAnswerBtn" style="display: none;">ابدأ</button>
+            <div id="deduction-input-area" class="input-area" style="display:none;">
+                <label for="deductionInput">قيمة الخصم:</label>
+                <input type="number" id="deductionInput" value="50" min="0">
+                <small>سيتم خصم هذه النقاط عند الإجابة الخاطئة.</small>
+            </div>
+
+            <button id="startPlayBtn" class="styled-button">بدء اللعبة</button>
         </div>
 
+        <div id="team-color-selection-screen" class="screen" style="display: none;">
+            <h2>اختر ألوان الفرق</h2>
+            <div class="team-color-selection-container">
+                <button id="team1-color-btn" class="team-color-btn" style="background-color: #c0392b; color: #fff;">الفريق الأول</button>
+                <button id="team2-color-btn" class="team-color-btn" style="background-color: #2980b9; color: #fff;">الفريق الثاني</button>
+            </div>
+            <button id="continueToGameBtn" class="styled-button">التالي</button>
+        </div>
+        <section id="first-team-selection-screen" class="screen" style="display: none;">
+            <h2 id="first-team-selection-title">من سيبدأ اللعب؟</h2>
+            <div id="first-team-container">
+                <button id="team1StartBtn" class="team-start-btn"></button>
+                <button id="team2StartBtn" class="team-start-btn"></button>
+            </div>
+        </section>
 
-        <div id="game-play-screen" class="screen">
+        <section id="game-play-screen" class="screen" style="display: none;">
             <div id="game-header-top">
-                <h3 id="currentTeamName" class="current-team-display"></h3>
                 <div class="scores-display">
-                    <span id="team1Score"></span>
-                    <span id="team2Score"></span>
+                    <div class="score-card-small">
+                        <p id="team1Score"></p>
+                    </div>
+                    <div class="score-card-small">
+                        <p id="team2Score"></p>
+                    </div>
+                </div>
+                <h2 id="currentTeamName"></h2>
+            </div>
+            <div id="categories-buttons-grid" class="game-categories-grid">
+            </div>
+        </section>
+
+        <div id="question-screen" class="screen" style="display: none;">
+            <h3 id="questionTeamName"></h3>
+            <h3 id="questionTimerDisplay"></h3>
+            <div id="question-content" class="question-content-container">
+            </div>
+            <div id="choices-area">
+                <button id="revealChoicesBtn">اختيارات</button>
+                <div id="multiple-choices" class="choices-grid">
                 </div>
             </div>
-            <div id="game-categories-grid" class="game-categories-grid"></div>
+            <div id="question-actions-turn-based" class="question-actions">
+                <button id="challengeBtn">تحدي</button>
+                <button id="answerBtn">الجواب</button>
+            </div>
+            <div id="question-actions-answer-first" class="question-actions">
+                </div>
+            </div>
+
+        <div id="answer-screen" class="screen" style="display: none;">
+            <h2>الجواب الصحيح:</h2>
+            <div id="answer-content" class="question-content-container">
+            </div>
+            <div class="answer-actions">
+                <button id="correctBtn">صح</button>
+                <button id="wrongBtn">خطأ</button>
+            </div>
         </div>
 
-        <div id="question-screen" class="screen">
-            <div class="question-header">
-                <h2 id="questionTeamName"></h2>
-                <span id="questionTimerDisplay" class="timer-display"></span>
-            </div>
-            <div id="question-content" class="question-content-container">
-                <h3 id="question-text"></h3>
-                <div id="multiple-choices" class="choices-grid"></div>
-            </div>
-            <div class="question-actions">
-                <button id="revealChoicesBtn" class="reveal-choices-btn">إظهار الخيارات</button>
-                <button id="challengeBtn" class="challenge-btn">تحدي</button>
-                <button id="answerBtn" class="answer-btn">عرض الإجابة</button>
-            </div>
-        </div>
-        
-        <div id="answer-screen" class="screen">
-            <h2>الإجابة الصحيحة</h2>
-            <div id="answer-content" class="question-content-container">
-                <h3 id="answer-text"></h3>
-                </div>
-            <div class="answer-actions">
-                <button id="correctBtn" class="correct-btn">إجابة صحيحة</button>
-                <button id="wrongBtn" class="wrong-btn">إجابة خاطئة</button>
-            </div>
-        </div>
-        
-        <div id="end-game-screen" class="screen">
+        <div id="end-game-screen" class="screen" style="display: none;">
             <div class="end-game-container">
                 <h2 id="end-game-title"></h2>
+                <div id="winner-name-display" class="winner-name-display"></div>
+                
                 <div class="score-cards-container">
-                    <div class="score-card" id="team1-score-card">
+                    <div id="team1-score-card" class="score-card">
                         <h3 id="team1-name-end-screen"></h3>
                         <p id="team1-final-score"></p>
                     </div>
-                    <div class="score-card" id="team2-score-card">
+                    <div id="team2-score-card" class="score-card">
                         <h3 id="team2-name-end-screen"></h3>
                         <p id="team2-final-score"></p>
                     </div>
                 </div>
-                <button id="endGameBtn" class="new-game-btn">ابدأ من جديد</button>
+                
+                <button id="endGameBtn" class="new-game-btn">افتح ميدان جديد</button>
             </div>
         </div>
-    </div>
-    
-    <div id="custom-alert-modal" class="modal">
-        <div class="modal-content">
-            <p id="custom-alert-message"></p>
-            <div class="modal-buttons">
-                <button id="custom-alert-ok-btn">موافق</button>
-                <button id="custom-alert-cancel-btn" style="display: none;">إلغاء</button>
-            </div>
-        </div>
-    </div>
 
-    <div id="challenge-modal" class="modal">
-        <div class="modal-content">
-            <p>هل تريد استخدام تحدي؟ سيتم إضافة النقاط للفريق الحالي.</p>
-            <div class="modal-buttons">
-                <button id="challenge-complete-btn">تأكيد</button>
-                <button id="challenge-cancel-btn">إلغاء</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="reveal-choices-confirm-modal" class="modal">
-        <div class="modal-content">
-            <p class="alert-message"></p>
-            <div class="modal-buttons">
-                <button id="reveal-choices-confirm-btn">نعم</button>
-                <button id="reveal-choices-cancel-btn">إلغاء</button>
-            </div>
-        </div>
-    </div>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+        
+        <script src="firebase-config.js"></script>
+        <script src="game.js"></script>
 
-    <div id="who-answered-modal" class="modal">
-        <div class="modal-content">
-            <p id="who-answered-modal-title"></p>
-            <div class="modal-buttons">
-                <button id="who-answered-team1-btn"></button>
-                <button id="who-answered-team2-btn"></button>
-                <button id="who-answered-none-btn">ولا أحد</button>
+        <div id="custom-alert-modal" class="modal">
+            <div class="modal-content">
+                <p id="custom-alert-message"></p>
+                <button id="custom-alert-ok-btn">حسناً</button>
+                <button id="custom-alert-cancel-btn" style="display:none;">إلغاء</button>
             </div>
         </div>
-    </div>
 
-    <script src="game.js"></script>
+        <div id="challenge-modal" class="modal">
+            <div class="modal-content">
+                <p>على الفريق المقابل اختيار تحدي يقوم به شخص أو عدة أشخاص من الفريق الحالي</p>
+                <div class="modal-buttons">
+                    <button id="challenge-complete-btn">تم التحدي</button>
+                    <button id="challenge-cancel-btn">إلغاء</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="reveal-choices-confirm-modal" class="modal">
+            <div class="modal-content">
+                <p class="alert-message"></p>
+                <div class="modal-buttons">
+                    <button id="reveal-choices-confirm-btn">نعم</button>
+                    <button id="reveal-choices-cancel-btn">إلغاء</button>
+                </div>
+            </div>
+        </div>
+        <div id="color-picker-modal" class="modal">
+            <div class="modal-content">
+                <h3>اختر لوناً</h3>
+                <div id="color-grid" class="color-grid">
+                    </div>
+                <button id="color-picker-cancel-btn">إلغاء</button>
+            </div>
+        </div>
+        <div id="who-answered-modal" class="modal">
+            <div class="modal-content">
+                <h3>من الذي أجاب بشكل صحيح؟</h3>
+                <button id="who-answered-team1-btn" class="styled-button"></button>
+                <button id="who-answered-team2-btn" class="styled-button"></button>
+                <button id="who-answered-none-btn" class="styled-button">ولا أحد</button>
+            </div>
+        </div>
+        </div>
 </body>
 </html>
