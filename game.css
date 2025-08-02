@@ -195,11 +195,12 @@ button:disabled {
     align-items: flex-start;
 }
 .game-categories-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 15px;
     padding: 20px 0;
-    justify-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
 .category-card, .category-item {
@@ -348,7 +349,11 @@ button:disabled {
     font-size: 1.5rem;
     margin: 0;
     flex-shrink: 0;
+    padding: 5px 15px; /* Added padding */
+    border-radius: 8px; /* Added border-radius */
+    transition: background-color 0.3s ease, color 0.3s ease; /* Added transition */
 }
+
 
 .question-actions,
 .answer-actions {
