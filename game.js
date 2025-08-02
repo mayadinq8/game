@@ -383,7 +383,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTeamForColor = '';
     const predefinedColors = [
         { bg: '#c0392b', text: '#fff' }, { bg: '#2980b9', text: '#fff' }, { bg: '#27ae60', text: '#fff' },
-        { bg: '#f1c40f', text: '#333' }, { bg: '#8e44ad', text: '#fff' }, { bg: '#d35400', text: '#fff' }
+        { bg: '#f1c40f', text: '#333' }, { bg: '#8e44ad', text: '#fff' }, { bg: '#d35400', text: '#fff' },
+        { bg: '#e84393', text: '#fff' }, // وردي
+        { bg: '#1abc9c', text: '#fff' }, // أخضر فاتح
+        { bg: '#34495e', text: '#fff' }, // كحلي غامق
+        { bg: '#9b59b6', text: '#fff' }, // بنفسجي
+        { bg: '#e67e22', text: '#fff' }, // برتقالي
+        { bg: '#bdc3c7', text: '#333' }  // رمادي فاتح
     ];
 
     team1ColorBtn.addEventListener('click', () => {
@@ -458,11 +464,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const grid = document.getElementById('categories-buttons-grid');
         grid.innerHTML = '';
         const pointsValues = [200, 200, 400, 400, 600, 600];
-
+        
         selectedCatalogs.forEach(catalog => {
             const catalogItem = document.createElement('div');
             catalogItem.className = 'category-item';
-
+            
             catalogItem.innerHTML = `
                 <img src="${catalog.image || 'placeholder.jpg'}" alt="${catalog.name}">
                 <p>${catalog.name}</p>
@@ -474,78 +480,70 @@ document.addEventListener('DOMContentLoaded', () => {
             const leftPointsDiv = catalogItem.querySelector('.left-side');
             const rightPointsDiv = catalogItem.querySelector('.right-side');
             
-            const usedQuestionsForCatalog = catalog.questions.filter(q => usedQuestions.has(q.question));
-
-            const usedQuestionsCounts = usedQuestionsForCatalog.reduce((acc, q) => {
-                acc[q.points] = (acc[q.points] || 0) + 1;
-                return acc;
-            }, {});
-
-            const pointsForLeft = {};
-            const pointsForRight = {};
-            
-            const usedQuestionsForLeft = new Set();
-            const usedQuestionsForRight = new Set();
+            // Fix: Create an array of available questions for this catalog
+            const availableQuestions = catalog.questions.filter(q => !usedQuestions.has(q.question));
 
             for (let i = 0; i < pointsValues.length; i++) {
                 const points = pointsValues[i];
 
-                // Left buttons
-                let question = catalog.questions.find(q => q.points === points && !usedQuestions.has(q.question));
-                const buttonLeft = document.createElement('button');
-                buttonLeft.dataset.points = points;
-                buttonLeft.textContent = `${points} نقطة`;
-                if (!question) {
-                     buttonLeft.disabled = true;
-                     buttonLeft.classList.add('disabled-btn');
-                } else {
-                    buttonLeft.style.backgroundColor = playMode === 'turnBased' ? teams.team1.color : 'var(--secondary-color)';
-                    buttonLeft.style.color = playMode === 'turnBased' ? teams.team1.textColor : '#fff';
-                    buttonLeft.addEventListener('click', () => {
-                        buttonLeft.disabled = true;
-                        buttonLeft.classList.add('disabled-btn');
-                        showQuestion(catalog.name, points, question.question);
-                    });
-                }
-                leftPointsDiv.appendChild(buttonLeft);
+                // Find a question with the specific points that hasn't been used yet
+                const question = availableQuestions.find(q => q.points === points && !usedQuestions.has(q.question));
 
-                // Right buttons
-                question = catalog.questions.find(q => q.points === points && !usedQuestions.has(q.question) && usedQuestions.has(question) );
-                const buttonRight = document.createElement('button');
-                buttonRight.dataset.points = points;
-                buttonRight.textContent = `${points} نقطة`;
+                const button = document.createElement('button');
+                button.dataset.points = points;
+                button.textContent = `${points} نقطة`;
+
                 if (!question) {
-                    buttonRight.disabled = true;
-                    buttonRight.classList.add('disabled-btn');
+                     button.disabled = true;
+                     button.classList.add('disabled-btn');
                 } else {
-                    buttonRight.style.backgroundColor = playMode === 'turnBased' ? teams.team2.color : 'var(--secondary-color)';
-                    buttonRight.style.color = playMode === 'turnBased' ? teams.team2.textColor : '#fff';
-                    buttonRight.addEventListener('click', () => {
-                        buttonRight.disabled = true;
-                        buttonRight.classList.add('disabled-btn');
+                    button.addEventListener('click', () => {
+                        // Mark the question as used immediately
+                        usedQuestions.add(question.question);
+                        button.disabled = true;
+                        button.classList.add('disabled-btn');
                         showQuestion(catalog.name, points, question.question);
                     });
                 }
-                rightPointsDiv.appendChild(buttonRight);
+                
+                // For 'turnBased' mode, only the current player's buttons are active
+                if (playMode === 'turnBased') {
+                    if (i % 2 === 0) { // For team 1
+                        button.style.backgroundColor = teams.team1.color;
+                        button.style.color = teams.team1.textColor;
+                        if (currentPlayer !== 'team1' || button.disabled) {
+                           button.disabled = true;
+                           button.classList.add('disabled-btn');
+                        }
+                    } else { // For team 2
+                        button.style.backgroundColor = teams.team2.color;
+                        button.style.color = teams.team2.textColor;
+                        if (currentPlayer !== 'team2' || button.disabled) {
+                           button.disabled = true;
+                           button.classList.add('disabled-btn');
+                        }
+                    }
+                }
+                
+                // Append the button to the correct side
+                if (i % 2 === 0) {
+                    leftPointsDiv.appendChild(button);
+                } else {
+                    rightPointsDiv.appendChild(button);
+                }
             }
+
+            // Remove the empty points-buttons container if no questions available
+            const allButtons = catalogItem.querySelectorAll('.points-buttons button');
+            if (Array.from(allButtons).every(btn => btn.disabled)) {
+                catalogItem.querySelector('.points-buttons-container').style.display = 'none';
+            }
+
             grid.appendChild(catalogItem);
         });
 
         if (checkIfAllButtonsDisabled()) {
             setTimeout(endGame, 1000);
-        }
-
-        if (playMode === 'turnBased') {
-            const allButtons = document.querySelectorAll('.points-buttons button');
-            allButtons.forEach(button => {
-                const buttonParent = button.closest('.points-buttons');
-                const isTeam1Button = buttonParent.classList.contains('left-side');
-                if (currentPlayer === 'team1' && !isTeam1Button) {
-                    button.disabled = true;
-                } else if (currentPlayer === 'team2' && isTeam1Button) {
-                    button.disabled = true;
-                }
-            });
         }
     };
 
@@ -572,9 +570,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentPoints = points;
         currentQuestion = availableQuestion;
-        usedQuestions.add(currentQuestion.question);
+        // The question is already marked as used when the button is clicked
 
         document.getElementById('questionTeamName').textContent = `الفريق الحالي: ${teams[currentPlayer].name}`;
+        // Update the color of the team name
+        document.getElementById('questionTeamName').style.color = teams[currentPlayer].color;
 
         const questionContent = document.getElementById('question-content');
         questionContent.innerHTML = '';
@@ -799,9 +799,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updatePointsButtonColor = (winningTeam) => {
-        const buttons = document.querySelectorAll(`button[data-points="${currentPoints}"]`);
+        // Find all buttons for the current question's points
+        const buttons = document.querySelectorAll('.points-buttons button[data-points="' + currentPoints + '"]');
+        
         buttons.forEach(button => {
-            if (button.textContent.includes(currentQuestion.question)) {
+            // Find the corresponding question for this button
+            const catalogItem = button.closest('.category-item');
+            const catalogName = catalogItem.querySelector('p').textContent;
+            const catalog = selectedCatalogs.find(c => c.name === catalogName);
+            const question = catalog.questions.find(q => q.points === currentPoints && usedQuestions.has(q.question));
+            
+            if (question && question.question === currentQuestion.question) {
                 if (winningTeam === 'team1') {
                     button.style.backgroundColor = teams.team1.color;
                     button.style.color = teams.team1.textColor;
@@ -890,6 +898,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateCurrentTeamName = () => {
         const currentTeamNameEl = document.getElementById('currentTeamName');
         currentTeamNameEl.textContent = `الفريق الحالي: ${teams[currentPlayer].name}`;
+        currentTeamNameEl.style.color = teams[currentPlayer].color; // Set color of team name
         // Update the score display border color for the current team
         document.getElementById('team1Score').closest('.score-card-small').style.borderColor = (currentPlayer === 'team1') ? teams.team1.color : 'transparent';
         document.getElementById('team2Score').closest('.score-card-small').style.borderColor = (currentPlayer === 'team2') ? teams.team2.color : 'transparent';
