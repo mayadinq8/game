@@ -186,9 +186,17 @@ button:disabled {
 }
 
 /* Categories Grid */
-.categories-grid, .game-categories-grid {
+.categories-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 20px 0;
+    justify-content: center;
+    align-items: flex-start;
+}
+.game-categories-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
     padding: 20px 0;
     justify-items: center;
@@ -202,6 +210,7 @@ button:disabled {
     text-align: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
     border: 3px solid transparent;
+    width: 200px;
 }
 
 .category-card:hover, .category-item:hover {
@@ -1085,7 +1094,7 @@ input[type="checkbox"]:checked::before {
 
 #color-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     margin-top: 20px;
 }
@@ -1178,4 +1187,10 @@ input[type="checkbox"]:checked::before {
 
 #who-answered-none-btn {
     background-color: #7f8c8d;
+}
+
+/* Style for team name in question screen */
+#questionTeamName {
+    font-weight: bold;
+    transition: color 0.3s ease;
 }
