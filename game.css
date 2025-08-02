@@ -17,8 +17,6 @@ body {
     overflow: hidden;
     --primary-color: #5d9cec;
     --secondary-color: #aaa; /* Used for disabled/default buttons */
-    --team1-color: #c0392b;
-    --team2-color: #2980b9;
 }
 
 .game-container {
@@ -150,7 +148,7 @@ button:hover:not(:disabled) {
 }
 
 button:disabled {
-    background-color: var(--secondary-color) !important;
+    background-color: var(--secondary-color);
     cursor: not-allowed;
     opacity: 0.7;
 }
@@ -161,7 +159,7 @@ button:disabled {
 }
 
 /* ألوان أزرار الأجوبة */
-#answerBtn, #showAnswerFirstBtn {
+#answerBtn {
     background-color: #28a745;
 }
 
@@ -337,13 +335,13 @@ button:disabled {
     border-radius: 8px;
     border: 2px solid transparent;
     transition: all 0.3s ease;
-    flex-grow: 1;
 }
 
 #team1Score, #team2Score {
     font-size: 1.3rem;
     font-weight: bold;
     text-align: center;
+    flex-grow: 1;
     padding: 0 5px;
 }
 
@@ -354,10 +352,7 @@ button:disabled {
     padding: 5px 15px; /* Added padding */
     border-radius: 8px; /* Added border-radius */
     transition: background-color 0.3s ease, color 0.3s ease; /* Added transition */
-    text-align: center;
-    width: 100%;
 }
-
 
 .question-actions,
 .answer-actions {
@@ -405,9 +400,8 @@ button:disabled {
 }
 
 .choices-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
     margin-top: 20px;
 }
@@ -422,7 +416,6 @@ button:disabled {
     color: #fff;
     cursor: pointer;
     transition: all 0.3s ease;
-    flex: 1 1 200px;
 }
 
 .choice-btn:hover {
@@ -542,11 +535,11 @@ button:disabled {
 }
 
 .team1-section {
-    background-color: var(--team1-color);
+    background-color: #c0392b;
 }
 
 .team2-section {
-    background-color: var(--team2-color);
+    background-color: #2980b9;
 }
 
 .spin-animation {
@@ -785,22 +778,6 @@ input[type="checkbox"]:checked::before {
     object-fit: contain;
 }
 
-.question-actions-wrapper {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    width: 100%;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-#choices-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
 /* تنسيق شاشة نهاية اللعبة */
 #end-game-screen {
     background: linear-gradient(135deg, #f0f8ff, #e6f7ff);
@@ -933,7 +910,6 @@ input[type="checkbox"]:checked::before {
 #custom-alert-modal {
     z-index: 9999;
 }
-
 
 /* تنسيق أيقونة المعلومات في بطاقات الكتالوجات */
 .category-card {
@@ -1178,31 +1154,12 @@ input[type="checkbox"]:checked::before {
 }
 
 #game-header-top .score-card-small.active {
-    border-color: var(--active-team-color);
+    border-color: var(--team-color);
 }
 
 /* Answer-first mode specific styles */
-.question-team-name-display {
+#question-actions-answer-first {
     display: none;
-}
-
-.answer-first-btn-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-}
-
-.answer-first-btn {
-    background-color: #7f8c8d; /* لون رمادي افتراضي */
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: bold;
-    padding: 15px 30px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
 }
 
 /* Who Answered Modal */
@@ -1223,12 +1180,12 @@ input[type="checkbox"]:checked::before {
 
 #who-answered-team1-btn {
     background-color: var(--team1-color);
-    color: #fff;
+    color: var(--team1-text-color);
 }
 
 #who-answered-team2-btn {
     background-color: var(--team2-color);
-    color: #fff;
+    color: var(--team2-text-color);
 }
 
 #who-answered-none-btn {
@@ -1239,18 +1196,4 @@ input[type="checkbox"]:checked::before {
 #questionTeamName {
     font-weight: bold;
     transition: color 0.3s ease;
-}
-
-.question-actions-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-@media (max-width: 768px) {
-    .question-actions-wrapper {
-        flex-direction: column;
-    }
 }
