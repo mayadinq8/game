@@ -1,3 +1,9 @@
+ document.addEventListener('DOMContentLoaded', () => {
+// Firebase references
+    const database = firebase.database();
+    const storage = firebase.storage();
+
+
 // Global variables
 let firebaseApp;
 let db;
@@ -68,32 +74,6 @@ const questionActionsTurnBased = document.getElementById('question-actions-turn-
 const questionActionsAnswerFirst = document.getElementById('question-actions-answer-first');
 
 
-// Firebase initialization
-function initFirebase() {
-    try {
-        // قم بلصق إعدادات مشروع Firebase هنا
-        const firebaseConfig = {
-            apiKey: "AIzaSyBLyoIoXp2aJCnhFqIFufMVBz0fzCS-FYY",
-            authDomain: "game-303eb.firebaseapp.com",
-            projectId: "game-303eb",
-            storageBucket: "game-303eb.firebasestorage.app",
-            messagingSenderId: "22261863844",
-            appId: "1:22261863844:web:66f8541079b9025ec69d31",
-            measurementId: "G-RKN2F3HVHS"
-        };
-        
-        firebaseApp = firebase.initializeApp(firebaseConfig);
-        db = firebaseApp.database();
-        console.log("Firebase initialized successfully.");
-        // Fetch categories after initialization
-        fetchCategories();
-    } catch (error) {
-        console.error("Error initializing Firebase:", error);
-        showCustomAlert("حدث خطأ في تهيئة Firebase. تأكد من أن إعدادات Firebase صحيحة.", () => {
-            // Optional: redirect or reload
-        });
-    }
-}
 
 // Helper function to switch screens
 function switchScreen(screenToShow) {
@@ -739,3 +719,4 @@ window.onload = () => {
     initFirebase();
 };
 
+});
