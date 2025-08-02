@@ -569,7 +569,11 @@ function stopTimer() {
 }
 
 // Event listeners
-startGameBtn.addEventListener('click', () => switchScreen(categorySelectionScreen));
+// Changed this line to re-fetch categories when starting a new game
+startGameBtn.addEventListener('click', () => {
+    fetchCategories();
+});
+
 nextBtn.addEventListener('click', fetchQuestions);
 startPlayBtn.addEventListener('click', () => {
     setupTeams();
