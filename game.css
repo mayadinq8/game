@@ -17,6 +17,8 @@ body {
     overflow: hidden;
     --primary-color: #5d9cec;
     --secondary-color: #aaa; /* Used for disabled/default buttons */
+    --team1-color: #c0392b;
+    --team2-color: #2980b9;
 }
 
 .game-container {
@@ -148,7 +150,7 @@ button:hover:not(:disabled) {
 }
 
 button:disabled {
-    background-color: var(--secondary-color);
+    background-color: var(--secondary-color) !important;
     cursor: not-allowed;
     opacity: 0.7;
 }
@@ -159,7 +161,7 @@ button:disabled {
 }
 
 /* ألوان أزرار الأجوبة */
-#answerBtn {
+#answerBtn, #showAnswerFirstBtn {
     background-color: #28a745;
 }
 
@@ -335,13 +337,13 @@ button:disabled {
     border-radius: 8px;
     border: 2px solid transparent;
     transition: all 0.3s ease;
+    flex-grow: 1;
 }
 
 #team1Score, #team2Score {
     font-size: 1.3rem;
     font-weight: bold;
     text-align: center;
-    flex-grow: 1;
     padding: 0 5px;
 }
 
@@ -352,6 +354,8 @@ button:disabled {
     padding: 5px 15px; /* Added padding */
     border-radius: 8px; /* Added border-radius */
     transition: background-color 0.3s ease, color 0.3s ease; /* Added transition */
+    text-align: center;
+    width: 100%;
 }
 
 
@@ -401,8 +405,9 @@ button:disabled {
 }
 
 .choices-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 15px;
     margin-top: 20px;
 }
@@ -417,6 +422,7 @@ button:disabled {
     color: #fff;
     cursor: pointer;
     transition: all 0.3s ease;
+    flex: 1 1 200px;
 }
 
 .choice-btn:hover {
@@ -536,11 +542,11 @@ button:disabled {
 }
 
 .team1-section {
-    background-color: #c0392b;
+    background-color: var(--team1-color);
 }
 
 .team2-section {
-    background-color: #2980b9;
+    background-color: var(--team2-color);
 }
 
 .spin-animation {
@@ -777,6 +783,22 @@ input[type="checkbox"]:checked::before {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     object-fit: contain;
+}
+
+.question-actions-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+#choices-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 /* تنسيق شاشة نهاية اللعبة */
@@ -1156,12 +1178,31 @@ input[type="checkbox"]:checked::before {
 }
 
 #game-header-top .score-card-small.active {
-    border-color: var(--team-color);
+    border-color: var(--active-team-color);
 }
 
 /* Answer-first mode specific styles */
-#question-actions-answer-first {
+.question-team-name-display {
     display: none;
+}
+
+.answer-first-btn-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.answer-first-btn {
+    background-color: #7f8c8d; /* لون رمادي افتراضي */
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 15px 30px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 /* Who Answered Modal */
@@ -1182,12 +1223,12 @@ input[type="checkbox"]:checked::before {
 
 #who-answered-team1-btn {
     background-color: var(--team1-color);
-    color: var(--team1-text-color);
+    color: #fff;
 }
 
 #who-answered-team2-btn {
     background-color: var(--team2-color);
-    color: var(--team2-text-color);
+    color: #fff;
 }
 
 #who-answered-none-btn {
@@ -1198,4 +1239,18 @@ input[type="checkbox"]:checked::before {
 #questionTeamName {
     font-weight: bold;
     transition: color 0.3s ease;
+}
+
+.question-actions-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .question-actions-wrapper {
+        flex-direction: column;
+    }
 }
