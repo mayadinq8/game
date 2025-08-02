@@ -480,64 +480,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const leftPointsDiv = catalogItem.querySelector('.left-side');
             const rightPointsDiv = catalogItem.querySelector('.right-side');
             
-            // Fix: Create an array of available questions for this catalog
-            const availableQuestions = catalog.questions.filter(q => !usedQuestions.has(q.question));
-
-            for (let i = 0; i < pointsValues.length; i++) {
-                const points = pointsValues[i];
-
-                // Find a question with the specific points that hasn't been used yet
-                const question = availableQuestions.find(q => q.points === points && !usedQuestions.has(q.question));
-
-                const button = document.createElement('button');
-                button.dataset.points = points;
-                button.textContent = `${points} نقطة`;
-
-                if (!question) {
-                     button.disabled = true;
-                     button.classList.add('disabled-btn');
-                } else {
-                    button.addEventListener('click', () => {
-                        // Mark the question as used immediately
-                        usedQuestions.add(question.question);
+            const createButtonsForSide = (sideDiv) => {
+                for (let i = 0; i < 6; i++) {
+                    const points = pointsValues[i];
+                    
+                    // Find an available question for this catalog and points value
+                    const availableQuestions = catalog.questions.filter(q => q.points === points && !usedQuestions.has(q.question));
+                    const question = availableQuestions[0];
+                    
+                    const button = document.createElement('button');
+                    button.dataset.points = points;
+                    button.textContent = `${points} نقطة`;
+                    button.dataset.questionText = question ? question.question : '';
+                    
+                    if (!question) {
                         button.disabled = true;
                         button.classList.add('disabled-btn');
-                        showQuestion(catalog.name, points, question.question);
-                    });
-                }
-                
-                // For 'turnBased' mode, only the current player's buttons are active
-                if (playMode === 'turnBased') {
-                    if (i % 2 === 0) { // For team 1
-                        button.style.backgroundColor = teams.team1.color;
-                        button.style.color = teams.team1.textColor;
-                        if (currentPlayer !== 'team1' || button.disabled) {
-                           button.disabled = true;
-                           button.classList.add('disabled-btn');
-                        }
-                    } else { // For team 2
-                        button.style.backgroundColor = teams.team2.color;
-                        button.style.color = teams.team2.textColor;
-                        if (currentPlayer !== 'team2' || button.disabled) {
-                           button.disabled = true;
-                           button.classList.add('disabled-btn');
-                        }
+                    } else {
+                        button.addEventListener('click', () => {
+                            // Mark the question as used immediately and disable the button
+                            usedQuestions.add(question.question);
+                            button.disabled = true;
+                            button.classList.add('disabled-btn');
+                            showQuestion(catalog.name, points, question.question);
+                        });
                     }
+                    
+                    sideDiv.appendChild(button);
                 }
-                
-                // Append the button to the correct side
-                if (i % 2 === 0) {
-                    leftPointsDiv.appendChild(button);
-                } else {
-                    rightPointsDiv.appendChild(button);
-                }
-            }
-
-            // Remove the empty points-buttons container if no questions available
-            const allButtons = catalogItem.querySelectorAll('.points-buttons button');
-            if (Array.from(allButtons).every(btn => btn.disabled)) {
-                catalogItem.querySelector('.points-buttons-container').style.display = 'none';
-            }
+            };
+            
+            createButtonsForSide(leftPointsDiv);
+            createButtonsForSide(rightPointsDiv);
 
             grid.appendChild(catalogItem);
         });
@@ -574,7 +548,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('questionTeamName').textContent = `الفريق الحالي: ${teams[currentPlayer].name}`;
         // Update the color of the team name
-        document.getElementById('questionTeamName').style.color = teams[currentPlayer].color;
+        document.getElementById('questionTeamName').style.color = teams[currentPlayer].textColor;
+        document.getElementById('questionTeamName').style.backgroundColor = teams[currentPlayer].color;
 
         const questionContent = document.getElementById('question-content');
         questionContent.innerHTML = '';
@@ -898,7 +873,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateCurrentTeamName = () => {
         const currentTeamNameEl = document.getElementById('currentTeamName');
         currentTeamNameEl.textContent = `الفريق الحالي: ${teams[currentPlayer].name}`;
-        currentTeamNameEl.style.color = teams[currentPlayer].color; // Set color of team name
+        currentTeamNameEl.style.color = teams[currentPlayer].textColor;
+        currentTeamNameEl.style.backgroundColor = teams[currentPlayer].color;
         // Update the score display border color for the current team
         document.getElementById('team1Score').closest('.score-card-small').style.borderColor = (currentPlayer === 'team1') ? teams.team1.color : 'transparent';
         document.getElementById('team2Score').closest('.score-card-small').style.borderColor = (currentPlayer === 'team2') ? teams.team2.color : 'transparent';
