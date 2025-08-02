@@ -49,7 +49,6 @@ const endGameBtn = document.getElementById('endGameBtn');
 const timerCheckbox = document.getElementById('timerCheckbox');
 const timerInputArea = document.getElementById('timer-input-area');
 const timerInput = document.getElementById('timerInput');
-const questionTimerDisplay = document.getElementById('questionTimerDisplay');
 const deductionCheckbox = document.getElementById('deductionCheckbox');
 const deductionInputArea = document.getElementById('deduction-input-area');
 const deductionInput = document.getElementById('deductionInput');
@@ -72,7 +71,18 @@ const questionActionsAnswerFirst = document.getElementById('question-actions-ans
 // Firebase initialization
 function initFirebase() {
     try {
-        const firebaseConfig = JSON.parse(__firebase_config);
+        // قم بلصق إعدادات مشروع Firebase هنا
+        const firebaseConfig = {
+  apiKey: "AIzaSyBLyoIoXp2aJCnhFqIFufMVBz0fzCS-FYY",
+  authDomain: "game-303eb.firebaseapp.com",
+  databaseURL: "https://game-303eb-default-rtdb.firebaseio.com",
+  projectId: "game-303eb",
+  storageBucket: "game-303eb.firebasestorage.app",
+  messagingSenderId: "22261863844",
+  appId: "1:22261863844:web:66f8541079b9025ec69d31",
+  measurementId: "G-RKN2F3HVHS"
+        };
+        
         firebaseApp = firebase.initializeApp(firebaseConfig);
         db = firebaseApp.database();
         console.log("Firebase initialized successfully.");
