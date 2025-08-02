@@ -4,18 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ميادين - أسئلة ومسابقات</title>
+    <!-- استدعاء ملفات CSS و JS -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
     <link rel="stylesheet" href="game.css">
+    
 </head>
 <body>
     <div class="game-container">
 
-        <div class="screen" id="main-screen">
+        <!-- شاشة البداية -->
+        <div class="screen active" id="main-screen">
             <div class="main-content">
                 <img class="main-logo" src="logogame.png" alt="شعار اللعبة">
                 <div id="main-screen-buttons">
                     <button id="startGameBtn">افتح ميدان جديد</button>
                 </div>
-
                 <div class="intro-content">
                     <div class="intro-image-wrapper">
                         <img src="taht.jpg" alt="صورة توضيحية" class="intro-image">
@@ -47,14 +53,16 @@
             </div>
         </div>
 
-        <div id="category-selection-screen" class="screen" style="display: none;">
+        <!-- شاشة اختيار الأقسام -->
+        <div id="category-selection-screen" class="screen">
             <h2>اختر ٦ أقسام لبدء اللعبة</h2>
             <div id="categories-grid" class="categories-grid">
             </div>
             <button id="nextBtn" disabled>التالي</button>
         </div>
 
-        <div id="team-setup-screen" class="screen exciting-setup" style="display: none;">
+        <!-- شاشة إعدادات اللعبة -->
+        <div id="team-setup-screen" class="screen exciting-setup">
             <h2>إعدادات اللعبة</h2>
             <p class="setup-subtitle">أدخل أسماء الفرق واختر خيارات اللعب</p>
             
@@ -106,8 +114,9 @@
 
             <button id="startPlayBtn" class="styled-button">بدء اللعبة</button>
         </div>
-
-        <div id="team-color-selection-screen" class="screen" style="display: none;">
+        
+        <!-- شاشة اختيار الألوان -->
+        <div id="team-color-selection-screen" class="screen">
             <h2>اختر ألوان الفرق</h2>
             <div class="team-color-selection-container">
                 <button id="team1-color-btn" class="team-color-btn" style="background-color: #c0392b; color: #fff;">الفريق الأول</button>
@@ -115,7 +124,9 @@
             </div>
             <button id="continueToGameBtn" class="styled-button">التالي</button>
         </div>
-        <section id="first-team-selection-screen" class="screen" style="display: none;">
+
+        <!-- شاشة اختيار الفريق الأول -->
+        <section id="first-team-selection-screen" class="screen">
             <h2 id="first-team-selection-title">من سيبدأ اللعب؟</h2>
             <div id="first-team-container">
                 <button id="team1StartBtn" class="team-start-btn"></button>
@@ -123,13 +134,14 @@
             </div>
         </section>
 
-        <section id="game-play-screen" class="screen" style="display: none;">
+        <!-- شاشة اللعب -->
+        <section id="game-play-screen" class="screen">
             <div id="game-header-top">
                 <div class="scores-display">
-                    <div class="score-card-small">
+                    <div class="score-card-small" id="score-card-team1">
                         <p id="team1Score"></p>
                     </div>
-                    <div class="score-card-small">
+                    <div class="score-card-small" id="score-card-team2">
                         <p id="team2Score"></p>
                     </div>
                 </div>
@@ -139,25 +151,29 @@
             </div>
         </section>
 
-        <div id="question-screen" class="screen" style="display: none;">
-            <h3 id="questionTeamName"></h3>
+        <!-- شاشة عرض السؤال -->
+        <div id="question-screen" class="screen">
+            <h3 id="questionTeamName" class="question-team-name-display"></h3>
             <h3 id="questionTimerDisplay"></h3>
-            <div id="question-content" class="question-content-container">
-            </div>
-            <div id="choices-area">
-                <button id="revealChoicesBtn">اختيارات</button>
-                <div id="multiple-choices" class="choices-grid">
+            <div class="question-actions-wrapper">
+                <div id="question-content" class="question-content-container">
+                </div>
+                <div id="choices-area">
+                    <div id="question-actions-turn-based" class="question-actions">
+                        <button id="challengeBtn">تحدي</button>
+                        <button id="answerBtn">الجواب</button>
+                    </div>
+                    <div id="question-actions-answer-first" class="question-actions">
+                        <button id="showAnswerFirstBtn" class="styled-button">الجواب</button>
+                    </div>
+                    <div id="multiple-choices" class="choices-grid">
+                    </div>
                 </div>
             </div>
-            <div id="question-actions-turn-based" class="question-actions">
-                <button id="challengeBtn">تحدي</button>
-                <button id="answerBtn">الجواب</button>
-            </div>
-            <div id="question-actions-answer-first" class="question-actions">
-                </div>
-            </div>
+        </div>
 
-        <div id="answer-screen" class="screen" style="display: none;">
+        <!-- شاشة عرض الجواب -->
+        <div id="answer-screen" class="screen">
             <h2>الجواب الصحيح:</h2>
             <div id="answer-content" class="question-content-container">
             </div>
@@ -167,7 +183,8 @@
             </div>
         </div>
 
-        <div id="end-game-screen" class="screen" style="display: none;">
+        <!-- شاشة نهاية اللعبة -->
+        <div id="end-game-screen" class="screen">
             <div class="end-game-container">
                 <h2 id="end-game-title"></h2>
                 <div id="winner-name-display" class="winner-name-display"></div>
@@ -187,14 +204,7 @@
             </div>
         </div>
 
-        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
-        
-        <script src="firebase-config.js"></script>
-        <script src="game.js"></script>
-
+        <!-- مودال (نوافذ منبثقة) -->
         <div id="custom-alert-modal" class="modal">
             <div class="modal-content">
                 <p id="custom-alert-message"></p>
@@ -222,6 +232,7 @@
                 </div>
             </div>
         </div>
+
         <div id="color-picker-modal" class="modal">
             <div class="modal-content">
                 <h3>اختر لوناً</h3>
@@ -230,6 +241,7 @@
                 <button id="color-picker-cancel-btn">إلغاء</button>
             </div>
         </div>
+
         <div id="who-answered-modal" class="modal">
             <div class="modal-content">
                 <h3>من الذي أجاب بشكل صحيح؟</h3>
@@ -238,6 +250,10 @@
                 <button id="who-answered-none-btn" class="styled-button">ولا أحد</button>
             </div>
         </div>
-        </div>
+
+        <script src="firebase-config.js"></script>
+        <script src="game.js"></script>
+        
+    </div>
 </body>
 </html>
