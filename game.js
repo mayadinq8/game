@@ -1,748 +1,951 @@
-// Global variables
-let firebaseApp;
-let db;
-let categories = [];
-let selectedCategories = [];
-let allQuestions = [];
-let currentCategoryIndex = 0;
-let currentQuestionIndex = 0;
-let team1 = { name: "الفريق الأول", score: 0, color: '#c0392b' };
-let team2 = { name: "الفريق الثاني", score: 0, color: '#2980b9' };
-let currentTeam = team1;
-let usedQuestionButtons = new Set();
-let timer;
-let timerSeconds;
-let playMode = 'turnBased';
-let deductionPoints = 0;
-let questionsUsedCount = 0;
+document.addEventListener('DOMContentLoaded', () => {
+
+// Firebase references
+const database = firebase.database();
+const storage = firebase.storage();
 
 // DOM elements
+const screens = document.querySelectorAll('.screen');
 const mainScreen = document.getElementById('main-screen');
 const categorySelectionScreen = document.getElementById('category-selection-screen');
 const teamSetupScreen = document.getElementById('team-setup-screen');
-const teamColorSelectionScreen = document.getElementById('team-color-selection-screen');
 const firstTeamSelectionScreen = document.getElementById('first-team-selection-screen');
+const teamColorSelectionScreen = document.getElementById('team-color-selection-screen'); // New
 const gamePlayScreen = document.getElementById('game-play-screen');
 const questionScreen = document.getElementById('question-screen');
 const answerScreen = document.getElementById('answer-screen');
 const endGameScreen = document.getElementById('end-game-screen');
+
+// -- إضافة جديدة لشاشات البوب-أب
+const customAlertModal = document.getElementById('custom-alert-modal');
+const customAlertMessage = document.getElementById('custom-alert-message');
+const customAlertOkBtn = document.getElementById('custom-alert-ok-btn');
+const customAlertCancelBtn = document.getElementById('custom-alert-cancel-btn');
+const challengeModal = document.getElementById('challenge-modal');
+const challengeCompleteBtn = document.getElementById('challenge-complete-btn');
+const challengeCancelBtn = document.getElementById('challenge-cancel-btn');
+const revealChoicesConfirmModal = document.getElementById('reveal-choices-confirm-modal');
+const revealChoicesConfirmBtn = document.getElementById('reveal-choices-confirm-btn');
+const revealChoicesCancelBtn = document.getElementById('reveal-choices-cancel-btn');
+const whoAnsweredModal = document.getElementById('who-answered-modal'); // New
+const whoAnsweredTeam1Btn = document.getElementById('who-answered-team1-btn'); // New
+const whoAnsweredTeam2Btn = document.getElementById('who-answered-team2-btn'); // New
+const whoAnsweredNoneBtn = document.getElementById('who-answered-none-btn'); // New
+
+// Buttons and inputs
 const startGameBtn = document.getElementById('startGameBtn');
 const categoriesGrid = document.getElementById('categories-grid');
 const nextBtn = document.getElementById('nextBtn');
 const team1NameInput = document.getElementById('team1Name');
 const team2NameInput = document.getElementById('team2Name');
-const startPlayBtn = document.getElementById('startPlayBtn');
-const team1StartBtn = document.getElementById('team1StartBtn');
-const team2StartBtn = document.getElementById('team2StartBtn');
-const team1ScoreDisplay = document.getElementById('team1Score');
-const team2ScoreDisplay = document.getElementById('team2Score');
-const currentTeamNameDisplay = document.getElementById('currentTeamName');
-const gameCategoriesGrid = document.getElementById('categories-buttons-grid');
-const questionContent = document.getElementById('question-content');
-const answerContent = document.getElementById('answer-content');
-const correctBtn = document.getElementById('correctBtn');
-const wrongBtn = document.getElementById('wrongBtn');
-const choicesArea = document.getElementById('choices-area');
-const multipleChoicesDiv = document.getElementById('multiple-choices');
-const challengeBtn = document.getElementById('challengeBtn');
-const endGameBtn = document.getElementById('endGameBtn');
 const timerCheckbox = document.getElementById('timerCheckbox');
 const timerInputArea = document.getElementById('timer-input-area');
 const timerInput = document.getElementById('timerInput');
 const deductionCheckbox = document.getElementById('deductionCheckbox');
 const deductionInputArea = document.getElementById('deduction-input-area');
 const deductionInput = document.getElementById('deductionInput');
-const team1ColorBtn = document.getElementById('team1-color-btn');
-const team2ColorBtn = document.getElementById('team2-color-btn');
-const continueToGameBtn = document.getElementById('continueToGameBtn');
-const questionTeamNameDisplay = document.getElementById('questionTeamName');
-const showAnswerFirstBtn = document.getElementById('showAnswerFirstBtn');
-const whoAnsweredModal = document.getElementById('who-answered-modal');
-const whoAnsweredTeam1Btn = document.getElementById('who-answered-team1-btn');
-const whoAnsweredTeam2Btn = document.getElementById('who-answered-team2-btn');
-const whoAnsweredNoneBtn = document.getElementById('who-answered-none-btn');
-const scoreCardTeam1 = document.getElementById('score-card-team1');
-const scoreCardTeam2 = document.getElementById('score-card-team2');
-const teamSetupScreenRadioButtons = document.querySelectorAll('input[name="play-mode"]');
-const questionActionsTurnBased = document.getElementById('question-actions-turn-based');
-const questionActionsAnswerFirst = document.getElementById('question-actions-answer-first');
+const startPlayBtn = document.getElementById('startPlayBtn');
+const team1StartBtn = document.getElementById('team1StartBtn');
+const team2StartBtn = document.getElementById('team2StartBtn');
+const revealChoicesBtn = document.getElementById('revealChoicesBtn');
+const challengeBtn = document.getElementById('challengeBtn');
+const answerBtn = document.getElementById('answerBtn');
+const correctBtn = document.getElementById('correctBtn');
+const wrongBtn = document.getElementById('wrongBtn');
+const endGameBtn = document.getElementById('endGameBtn');
+const playModeSelection = document.getElementById('play-mode-selection'); // New
+const team1ColorBtn = document.getElementById('team1-color-btn'); // New
+const team2ColorBtn = document.getElementById('team2-color-btn'); // New
+const colorPickerModal = document.getElementById('color-picker-modal'); // New
+const colorGrid = document.getElementById('color-grid'); // New
+const colorPickerCancelBtn = document.getElementById('color-picker-cancel-btn'); // New
+const startColorSelectionBtn = document.getElementById('startColorSelectionBtn'); // New
+const continueToGameBtn = document.getElementById('continueToGameBtn'); // New
 
+// Game state variables
+let allQuestions = {};
+let allCatalogs = [];
+let selectedCatalogs = [];
+let teams = {
+  team1: { name: '', score: 0, challenges: 2, color: '#c0392b', textColor: '#fff' },
+  team2: { name: '', score: 0, challenges: 2, color: '#2980b9', textColor: '#fff' }
+};
+let currentPlayer = 'team1';
+let playMode = 'turnBased'; // Default
+let hasTimer = false;
+let timerValue = 0;
+let hasDeduction = false;
+let deductionValue = 0;
+let currentQuestion = null;
+let currentPoints = 0;
+let timerInterval = null;
+let isChoicesUsed = false;
+let usedQuestions = new Set();
+const LOGO_SRC = 'logogame.png';
 
-// Firebase initialization
-function initFirebase() {
-    try {
-        //  --------------------------------------------------------------
-        //  هام جدًا:
-        //  تم تحديث إعدادات مشروع Firebase الخاصة بك بناءً على المعلومات التي قدمتها.
-        const firebaseConfig = {
-            apiKey: "AIzaSyBLyoIoXp2aJCnhFqIFufMVBz0fzCS-FYY",
-            authDomain: "game-303eb.firebaseapp.com",
-            databaseURL: "https://game-303eb-default-rtdb.firebaseio.com",
-            projectId: "game-303eb",
-            storageBucket: "game-303eb.firebasestorage.app",
-            messagingSenderId: "22261863844",
-            appId: "1:22261863844:web:66f8541079b9025ec69d31",
-            measurementId: "G-RKN2F3HVHS"
-        };
-        //  --------------------------------------------------------------
-        
-        firebaseApp = firebase.initializeApp(firebaseConfig);
-        db = firebaseApp.database();
-        console.log("Firebase initialized successfully.");
-        // Fetch categories after initialization
-        fetchCategories();
-    } catch (error) {
-        console.error("Error initializing Firebase:", error);
-        showCustomAlert("حدث خطأ في تهيئة Firebase. تأكد من أن إعدادات Firebase صحيحة.", () => {
-            // Optional: redirect or reload
-        });
-    }
-}
+// Helper functions
+const showScreen = (screenId) => {
+  screens.forEach(screen => screen.style.display = 'none');
+  screenId.style.display = 'flex';
+  // Add a class for animation if needed
+};
 
-// Helper function to switch screens
-function switchScreen(screenToShow) {
-    const screens = [mainScreen, categorySelectionScreen, teamSetupScreen, teamColorSelectionScreen, firstTeamSelectionScreen, gamePlayScreen, questionScreen, answerScreen, endGameScreen];
-    screens.forEach(screen => {
-        screen.classList.remove('active');
-        screen.style.display = 'none';
-    });
-    screenToShow.classList.add('active');
-    screenToShow.style.display = 'flex';
-}
+const updateLogo = (size) => {
+  const existingLogo = document.querySelector('.game-container img');
+  if (existingLogo) {
+    existingLogo.remove();
+  }
+  const logo = document.createElement('img');
+  logo.src = LOGO_SRC;
+  logo.alt = 'شعار اللعبة';
+  if (size === 'small') {
+    logo.className = 'small-logo';
+  } else {
+    logo.className = 'main-logo';
+  }
+  document.querySelector('.game-container').prepend(logo);
+};
 
-// Show a custom alert modal instead of alert()
-function showCustomAlert(message, onOk = null, onCancel = null) {
-    const modal = document.getElementById('custom-alert-modal');
-    const msgElement = document.getElementById('custom-alert-message');
-    const okBtn = document.getElementById('custom-alert-ok-btn');
-    const cancelBtn = document.getElementById('custom-alert-cancel-btn');
+const showCustomAlert = (message, onConfirmCallback = () => {}, onCancelCallback = null) => {
+  const modal = document.getElementById('custom-alert-modal');
+  const messageElement = document.getElementById('custom-alert-message');
+  const okBtn = document.getElementById('custom-alert-ok-btn');
+  const cancelBtn = document.getElementById('custom-alert-cancel-btn');
 
-    msgElement.textContent = message;
+  messageElement.textContent = message;
+  okBtn.textContent = onCancelCallback ? 'نعم' : 'موافق';
+  okBtn.onclick = () => {
+    modal.style.display = 'none';
+    onConfirmCallback();
+  };
 
-    okBtn.onclick = () => {
-        modal.style.display = 'none';
-        if (onOk) onOk();
+  if (onCancelCallback) {
+    cancelBtn.style.display = 'inline-block';
+    cancelBtn.onclick = () => {
+      modal.style.display = 'none';
+      onCancelCallback();
     };
+  } else {
+    cancelBtn.style.display = 'none';
+  }
+  modal.style.display = 'flex';
+};
 
-    if (onCancel) {
-        cancelBtn.style.display = 'inline-block';
-        cancelBtn.onclick = () => {
-            modal.style.display = 'none';
-            onCancel();
+const showConfirmAlert = (message, onConfirm, onCancel) => {
+  const modal = document.getElementById('reveal-choices-confirm-modal');
+  if (!modal) {
+    if (window.confirm(message)) {
+      onConfirm();
+    } else {
+      onCancel();
+    }
+    return;
+  }
+
+  const messageElement = modal.querySelector('.alert-message');
+  const confirmBtn = modal.querySelector('#reveal-choices-confirm-btn');
+  const cancelBtn = modal.querySelector('#reveal-choices-cancel-btn');
+
+  messageElement.textContent = message;
+  modal.style.display = 'flex';
+
+  confirmBtn.onclick = () => {
+    modal.style.display = 'none';
+    onConfirm();
+  };
+
+  cancelBtn.onclick = () => {
+    modal.style.display = 'none';
+    onCancel();
+  };
+};
+
+const showChallengeModal = (onConfirm, onCancel) => {
+  challengeModal.style.display = 'flex';
+  challengeCompleteBtn.onclick = () => {
+    challengeModal.style.display = 'none';
+    onConfirm();
+  };
+  challengeCancelBtn.onclick = () => {
+    challengeModal.style.display = 'none';
+    onCancel();
+  };
+};
+
+const showWhoAnsweredModal = (onTeam1, onTeam2, onNone) => {
+  whoAnsweredModal.style.display = 'flex';
+  whoAnsweredTeam1Btn.textContent = teams.team1.name;
+  whoAnsweredTeam2Btn.textContent = teams.team2.name;
+  whoAnsweredTeam1Btn.onclick = () => {
+    whoAnsweredModal.style.display = 'none';
+    onTeam1();
+  };
+  whoAnsweredTeam2Btn.onclick = () => {
+    whoAnsweredModal.style.display = 'none';
+    onTeam2();
+  };
+  whoAnsweredNoneBtn.onclick = () => {
+    whoAnsweredModal.style.display = 'none';
+    onNone();
+  };
+};
+
+const createMediaElement = (mediaUrl) => {
+  if (!mediaUrl) return null;
+
+  const url = new URL(mediaUrl);
+  const filename = url.pathname.split('/').pop().split('?')[0];
+  const mediaType = filename.split('.').pop();
+
+  let mediaElement;
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+  const videoExtensions = ['mp4', 'webm', 'ogg'];
+  const audioExtensions = ['mp3', 'wav'];
+
+  if (imageExtensions.includes(mediaType.toLowerCase())) {
+    mediaElement = document.createElement('img');
+    mediaElement.className = 'question-media-image';
+  } else if (videoExtensions.includes(mediaType.toLowerCase())) {
+    mediaElement = document.createElement('video');
+    mediaElement.className = 'question-media-video';
+    mediaElement.controls = true;
+  } else if (audioExtensions.includes(mediaType.toLowerCase())) {
+    mediaElement = document.createElement('audio');
+    mediaElement.className = 'question-media-audio';
+    mediaElement.controls = true;
+  }
+
+  if (mediaElement) {
+    mediaElement.src = mediaUrl;
+  }
+  return mediaElement;
+};
+
+const getMediaUrl = async (mediaPath) => {
+  if (!mediaPath) return null;
+  if (mediaPath.startsWith('https://firebasestorage')) {
+    return mediaPath;
+  }
+  try {
+    const mediaRef = storage.ref(mediaPath);
+    return await mediaRef.getDownloadURL();
+  } catch (error) {
+    console.error("Error fetching media URL:", error);
+    return null;
+  }
+};
+
+const fetchCatalogs = async () => {
+  try {
+    const catalogsSnapshot = await database.ref('catalogs').once('value');
+    const catalogsData = catalogsSnapshot.val();
+    const questionsSnapshot = await database.ref('questions').once('value');
+    const questionsData = questionsSnapshot.val();
+
+    if (!catalogsData) {
+      console.error("لا توجد كتالوجات في قاعدة البيانات.");
+      return;
+    }
+
+    const catalogsMap = {};
+    for (const catalogName in catalogsData) {
+      if (catalogsData.hasOwnProperty(catalogName)) {
+        catalogsMap[catalogName] = {
+          name: catalogName,
+          image: catalogsData[catalogName].image,
+          description: catalogsData[catalogName].description || '',
+          questions: []
         };
-    } else {
-        cancelBtn.style.display = 'none';
+      }
     }
 
-    modal.style.display = 'flex';
-}
-
-// Fetch categories from Firebase
-async function fetchCategories() {
-    try {
-        const snapshot = await db.ref('categories').once('value');
-        const data = snapshot.val();
-        if (data) {
-            categories = Object.values(data);
-            displayCategories();
-        } else {
-            showCustomAlert('لا توجد أقسام متاحة. يرجى إضافة أقسام أولاً.');
-        }
-    } catch (error) {
-        console.error("Error fetching categories:", error);
-        showCustomAlert("حدث خطأ أثناء جلب الأقسام. يرجى التحقق من اتصالك.", () => {
-            fetchCategories(); // Retry on OK
-        });
-    }
-}
-
-// Display categories for selection
-function displayCategories() {
-    categoriesGrid.innerHTML = '';
-    categories.forEach(category => {
-        const card = document.createElement('div');
-        card.classList.add('category-card');
-        card.innerHTML = `
-            <img src="${category.image_url}" alt="${category.title}">
-            <h3>${category.title}</h3>
-        `;
-        card.addEventListener('click', () => toggleCategory(card, category));
-        categoriesGrid.appendChild(card);
-    });
-    switchScreen(categorySelectionScreen);
-}
-
-// Handle category selection
-function toggleCategory(card, category) {
-    if (card.classList.contains('selected')) {
-        card.classList.remove('selected');
-        selectedCategories = selectedCategories.filter(cat => cat.title !== category.title);
-    } else if (selectedCategories.length < 6) {
-        card.classList.add('selected');
-        selectedCategories.push(category);
-    }
-
-    if (selectedCategories.length === 6) {
-        nextBtn.disabled = false;
-    } else {
-        nextBtn.disabled = true;
-    }
-}
-
-// Fetch questions for selected categories
-async function fetchQuestions() {
-    allQuestions = [];
-    try {
-        const promises = selectedCategories.map(cat =>
-            db.ref(`questions/${cat.id}`).once('value').then(snapshot => {
-                const questions = snapshot.val();
-                if (questions) {
-                    return Object.values(questions);
-                }
-                return [];
-            })
-        );
-        const results = await Promise.all(promises);
-        results.forEach((questions, index) => {
-            allQuestions.push({
-                categoryTitle: selectedCategories[index].title,
-                questions: questions
-            });
-        });
-        console.log("All questions fetched:", allQuestions);
-        questionsUsedCount = 0;
-        switchScreen(teamSetupScreen);
-    } catch (error) {
-        console.error("Error fetching questions:", error);
-        showCustomAlert("حدث خطأ أثناء جلب الأسئلة. يرجى المحاولة مرة أخرى.");
-    }
-}
-
-// Set up teams and display on screen
-function setupTeams() {
-    team1.name = team1NameInput.value || "الفريق الأول";
-    team2.name = team2NameInput.value || "الفريق الثاني";
-    team1StartBtn.textContent = team1.name;
-    team2StartBtn.textContent = team2.name;
-
-    // Get play mode from radio buttons
-    const playModeSelection = document.querySelector('input[name="play-mode"]:checked');
-    if (playModeSelection) {
-        playMode = playModeSelection.value;
-    }
-    
-    // Get deduction points
-    deductionPoints = deductionCheckbox.checked ? parseInt(deductionInput.value) : 0;
-    
-    switchScreen(teamColorSelectionScreen);
-}
-
-// Display category buttons for the game
-function displayGameCategories() {
-    gameCategoriesGrid.innerHTML = '';
-    
-    allQuestions.forEach((category, index) => {
-        const categoryItem = document.createElement('div');
-        categoryItem.classList.add('category-item');
-        categoryItem.innerHTML = `<h3>${category.categoryTitle}</h3>`;
-        
-        const pointsButtons = document.createElement('div');
-        pointsButtons.classList.add('points-buttons');
-
-        // Points values based on game logic
-        const pointsValues = [100, 200, 300, 400, 500];
-
-        pointsValues.forEach(points => {
-            const button = document.createElement('button');
-            button.textContent = points;
-            button.classList.add('points-btn');
-            button.dataset.categoryId = index;
-            button.dataset.points = points;
-            
-            // Set initial button style based on play mode
-            if (playMode === 'turnBased') {
-                button.style.backgroundColor = 'var(--secondary-color)';
-                button.style.color = '#fff';
-            } else { // answerFirst
-                button.style.backgroundColor = '#7f8c8d'; // Grey
+    if (questionsData) {
+      for (const batchKey in questionsData) {
+        const batchItems = questionsData[batchKey].items;
+        if (batchItems) {
+          Object.values(batchItems).forEach(item => {
+            const catalogName = item.catalog;
+            if (catalogsMap[catalogName]) {
+              catalogsMap[catalogName].questions.push(item);
             }
-
-            button.addEventListener('click', () => handleQuestionButtonClick(button, index, points));
-            pointsButtons.appendChild(button);
-        });
-
-        categoryItem.appendChild(pointsButtons);
-        gameCategoriesGrid.appendChild(categoryItem);
-    });
-
-    switchScreen(gamePlayScreen);
-}
-
-// Handle question button click
-function handleQuestionButtonClick(button, categoryIndex, points) {
-    if (usedQuestionButtons.has(button.id)) {
-        showCustomAlert("هذا السؤال تم استخدامه بالفعل.");
-        return;
-    }
-
-    // Assign a unique ID to the button
-    const buttonId = `cat-${categoryIndex}-points-${points}`;
-    button.id = buttonId;
-    
-    // Find the question with the matching points value that hasn't been used
-    const categoryQuestions = allQuestions[categoryIndex].questions;
-    const question = categoryQuestions.find(q => q.points == points && !q.used);
-
-    if (question) {
-        question.used = true;
-        questionsUsedCount++;
-        button.disabled = true;
-        usedQuestionButtons.add(buttonId);
-        
-        // Store the question for later use
-        window.currentQuestion = question;
-        window.currentQuestionButtonId = buttonId; // Store button ID to update later
-
-        displayQuestionScreen(question);
-    } else {
-        showCustomAlert('لا يوجد سؤال متاح بهذه النقاط في هذا القسم.');
-        button.disabled = true;
-    }
-}
-
-// Display the question screen
-function displayQuestionScreen(question) {
-    questionContent.innerHTML = '';
-    choicesArea.style.display = 'none';
-    multipleChoicesDiv.innerHTML = '';
-    
-    // Hide or show question actions based on play mode
-    if (playMode === 'turnBased') {
-        questionActionsTurnBased.style.display = 'flex';
-        questionActionsAnswerFirst.style.display = 'none';
-        questionTeamNameDisplay.textContent = `دور ${currentTeam.name}`;
-        questionTeamNameDisplay.style.color = currentTeam.color;
-        questionTeamNameDisplay.style.display = 'block';
-    } else { // answerFirst
-        questionActionsTurnBased.style.display = 'none';
-        questionActionsAnswerFirst.style.display = 'flex';
-        questionTeamNameDisplay.style.display = 'none';
-    }
-
-    const questionText = document.createElement('p');
-    questionText.id = 'question-text';
-    questionText.innerHTML = question.text;
-    questionContent.appendChild(questionText);
-
-    // Add media if available
-    if (question.media_url) {
-        const mediaContainer = document.createElement('div');
-        mediaContainer.classList.add('media-container');
-        if (question.media_type === 'image') {
-            const img = document.createElement('img');
-            img.src = question.media_url;
-            mediaContainer.appendChild(img);
-        } else if (question.media_type === 'video') {
-            const video = document.createElement('video');
-            video.src = question.media_url;
-            video.controls = true;
-            mediaContainer.appendChild(video);
-        } else if (question.media_type === 'audio') {
-            const audio = document.createElement('audio');
-            audio.src = question.media_url;
-            audio.controls = true;
-            mediaContainer.appendChild(audio);
+          });
         }
-        questionContent.appendChild(mediaContainer);
+      }
+    }
+    allCatalogs = Object.values(catalogsMap);
+
+  } catch (error) {
+    console.error("Error fetching catalogs:", error);
+    showCustomAlert("فشل في جلب الكتالوجات من Firebase.");
+  }
+};
+
+const displayCategorySelection = () => {
+  categoriesGrid.innerHTML = '';
+  allCatalogs.forEach(catalog => {
+    const card = document.createElement('div');
+    card.className = 'category-card';
+    card.innerHTML = `
+      <img src="${catalog.image || 'placeholder.jpg'}" alt="${catalog.name}">
+      <p>${catalog.name}</p>
+      ${catalog.description ? `<div class="info-icon-container" data-description="${catalog.description}">
+        <span class="info-icon">!</span>
+      </div>` : ''}
+    `;
+
+    const infoIconBtn = card.querySelector('.info-icon-container');
+    if (infoIconBtn) {
+      infoIconBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const description = e.currentTarget.dataset.description;
+        showCustomAlert(description);
+      });
     }
 
-    if (timerCheckbox.checked) {
-        startTimer(timerInput.value);
-    }
-
-    switchScreen(questionScreen);
-}
-
-// Display multiple choices
-function displayChoices(question) {
-    multipleChoicesDiv.innerHTML = '';
-    choicesArea.style.display = 'block';
-    
-    const choices = [question.correct_answer, ...question.wrong_answers];
-    choices.sort(() => Math.random() - 0.5);
-    
-    choices.forEach(choice => {
-        const choiceBtn = document.createElement('button');
-        choiceBtn.classList.add('choice-btn');
-        choiceBtn.textContent = choice;
-        choiceBtn.addEventListener('click', () => handleChoiceClick(choiceBtn, choice, question));
-        multipleChoicesDiv.appendChild(choiceBtn);
-    });
-}
-
-// Handle multiple choice button click (turn-based only)
-function handleChoiceClick(button, choiceText, question) {
-    if (choiceText === question.correct_answer) {
-        showCustomAlert("إجابة صحيحة!");
-        updateScore(currentTeam, question.points);
-        showAnswer(question);
-    } else {
-        showCustomAlert("إجابة خاطئة!");
-        if (deductionPoints > 0) {
-            updateScore(currentTeam, -deductionPoints);
-        }
-        // Change turn and show answer
-        switchTurn();
-        showAnswer(question);
-    }
-}
-
-// Show the answer screen
-function showAnswer(question) {
-    answerContent.innerHTML = '';
-    const answerText = document.createElement('p');
-    answerText.id = 'answer-text';
-    answerText.innerHTML = `**${question.correct_answer}**`;
-    answerContent.appendChild(answerText);
-    
-    // Add media if available
-    if (question.media_url) {
-        const mediaContainer = document.createElement('div');
-        mediaContainer.classList.add('media-container');
-        if (question.media_type === 'image') {
-            const img = document.createElement('img');
-            img.src = question.media_url;
-            mediaContainer.appendChild(img);
-        } else if (question.media_type === 'video') {
-            const video = document.createElement('video');
-            video.src = question.media_url;
-            video.controls = true;
-            mediaContainer.appendChild(video);
-        } else if (question.media_type === 'audio') {
-            const audio = document.createElement('audio');
-            audio.src = question.media_url;
-            audio.controls = true;
-            mediaContainer.appendChild(audio);
-        }
-        answerContent.appendChild(mediaContainer);
-    }
-
-    stopTimer();
-    switchScreen(answerScreen);
-}
-
-// Update the score and UI
-function updateScore(team, points) {
-    team.score += points;
-    updateScoreDisplay();
-}
-
-// Update the score display
-function updateScoreDisplay() {
-    team1ScoreDisplay.textContent = `${team1.name}: ${team1.score}`;
-    team2ScoreDisplay.textContent = `${team2.name}: ${team2.score}`;
-
-    // Set score card background colors
-    scoreCardTeam1.style.backgroundColor = team1.color;
-    scoreCardTeam2.style.backgroundColor = team2.color;
-    scoreCardTeam1.style.color = '#fff';
-    scoreCardTeam2.style.color = '#fff';
-
-    if (playMode === 'turnBased') {
-        if (currentTeam === team1) {
-            scoreCardTeam1.classList.add('active');
-            scoreCardTeam2.classList.remove('active');
-            scoreCardTeam1.style.borderColor = team1.color;
-            scoreCardTeam2.style.borderColor = 'transparent';
+    card.addEventListener('click', () => {
+      if (card.classList.contains('selected')) {
+        card.classList.remove('selected');
+        selectedCatalogs = selectedCatalogs.filter(c => c.name !== catalog.name);
+      } else {
+        if (selectedCatalogs.length < 6) {
+          card.classList.add('selected');
+          selectedCatalogs.push(catalog);
         } else {
-            scoreCardTeam2.classList.add('active');
-            scoreCardTeam1.classList.remove('active');
-            scoreCardTeam2.style.borderColor = team2.color;
-            scoreCardTeam1.style.borderColor = 'transparent';
+          showCustomAlert("يمكنك اختيار 6 كتالوجات فقط.");
         }
-    }
-}
+      }
+      nextBtn.disabled = selectedCatalogs.length !== 6;
+    });
+    categoriesGrid.appendChild(card);
+  });
+};
 
-// Switch the current team
-function switchTurn() {
-    if (playMode === 'turnBased') {
-        currentTeam = (currentTeam === team1) ? team2 : team1;
-        currentTeamNameDisplay.textContent = `دور ${currentTeam.name}`;
-        currentTeamNameDisplay.style.backgroundColor = currentTeam.color;
-        updateScoreDisplay();
-    }
-}
-
-// Check for game end
-function checkGameEnd() {
-    if (questionsUsedCount >= 30) { // Assuming 6 categories * 5 questions = 30
-        endGame();
-    } else {
-        switchScreen(gamePlayScreen);
-    }
-}
-
-// End the game and display results
-function endGame() {
-    let winner;
-    if (team1.score > team2.score) {
-        winner = team1;
-    } else if (team2.score > team1.score) {
-        winner = team2;
-    } else {
-        winner = null; // Tie
-    }
-
-    const endGameTitle = document.getElementById('end-game-title');
-    const winnerNameDisplay = document.getElementById('winner-name-display');
-    const team1NameEndScreen = document.getElementById('team1-name-end-screen');
-    const team2NameEndScreen = document.getElementById('team2-name-end-screen');
-    const team1FinalScore = document.getElementById('team1-final-score');
-    const team2FinalScore = document.getElementById('team2-final-score');
-    const team1ScoreCard = document.getElementById('team1-score-card');
-    const team2ScoreCard = document.getElementById('team2-score-card');
-    
-    if (winner) {
-        endGameTitle.textContent = "الفائز هو:";
-        winnerNameDisplay.textContent = winner.name;
-        winnerNameDisplay.style.backgroundColor = winner.color;
-        
-        if (winner === team1) {
-            team1ScoreCard.classList.add('winner-card');
-            team2ScoreCard.classList.add('loser-card');
-        } else {
-            team2ScoreCard.classList.add('winner-card');
-            team1ScoreCard.classList.add('loser-card');
-        }
-    } else {
-        endGameTitle.textContent = "تعادل!";
-        winnerNameDisplay.textContent = "";
-        winnerNameDisplay.style.backgroundColor = 'transparent';
-        team1ScoreCard.classList.remove('winner-card');
-        team2ScoreCard.classList.remove('winner-card');
-        team1ScoreCard.classList.add('loser-card');
-        team2ScoreCard.classList.add('loser-card');
-    }
-
-    team1NameEndScreen.textContent = team1.name;
-    team2NameEndScreen.textContent = team2.name;
-    team1FinalScore.textContent = team1.score;
-    team2FinalScore.textContent = team2.score;
-
-    switchScreen(endGameScreen);
-}
-
-// Timer functions
-function startTimer(seconds) {
-    if (timer) clearInterval(timer);
-    timerSeconds = parseInt(seconds);
-    questionTimerDisplay.textContent = `الوقت المتبقي: ${timerSeconds}`;
-    questionTimerDisplay.style.display = 'block';
-
-    timer = setInterval(() => {
-        timerSeconds--;
-        questionTimerDisplay.textContent = `الوقت المتبقي: ${timerSeconds}`;
-        if (timerSeconds <= 0) {
-            clearInterval(timer);
-            showCustomAlert("انتهى الوقت!", () => {
-                // Handle timeout logic, e.g., switch turn or deduct points
-                if (playMode === 'turnBased') {
-                    if (deductionPoints > 0) {
-                        updateScore(currentTeam, -deductionPoints);
-                    }
-                    switchTurn();
-                    showAnswer(window.currentQuestion);
-                } else { // answerFirst
-                    showAnswer(window.currentQuestion);
-                }
-            });
-        }
-    }, 1000);
-}
-
-function stopTimer() {
-    if (timer) {
-        clearInterval(timer);
-        timer = null;
-    }
-    questionTimerDisplay.style.display = 'none';
-}
-
-// Event listeners
-// Changed this line to re-fetch categories when starting a new game
-startGameBtn.addEventListener('click', () => {
-    fetchCategories();
+startGameBtn.addEventListener('click', async () => {
+  selectedCatalogs = [];
+  usedQuestions = new Set();
+  updateLogo('small');
+  await fetchCatalogs();
+  if (allCatalogs.length > 0) {
+    showScreen(categorySelectionScreen);
+    displayCategorySelection();
+  } else {
+    showCustomAlert("لا توجد كتالوجات متاحة لبدء لعبة جديدة. يرجى إضافة كتالوجات في Firebase.");
+    showScreen(mainScreen);
+    updateLogo('large');
+  }
 });
 
-nextBtn.addEventListener('click', fetchQuestions);
+nextBtn.addEventListener('click', () => {
+  showScreen(teamSetupScreen);
+});
+
+deductionCheckbox.addEventListener('change', (e) => {
+  deductionInputArea.style.display = e.target.checked ? 'block' : 'none';
+  hasDeduction = e.target.checked;
+});
+
+timerCheckbox.addEventListener('change', (e) => {
+  timerInputArea.style.display = e.target.checked ? 'block' : 'none';
+  hasTimer = e.target.checked;
+});
+
 startPlayBtn.addEventListener('click', () => {
-    setupTeams();
-    switchScreen(teamColorSelectionScreen);
+  const team1Name = team1NameInput.value || 'الفريق الأول';
+  const team2Name = team2NameInput.value || 'الفريق الثاني';
+  teams.team1.name = team1Name;
+  teams.team2.name = team2Name;
+
+  playMode = document.querySelector('input[name="play-mode"]:checked').value;
+
+  if (hasTimer) {
+    timerValue = parseInt(timerInput.value, 10);
+    if (isNaN(timerValue) || timerValue <= 0) {
+      showCustomAlert("يرجى إدخال مدة مؤقت صحيحة.");
+      return;
+    }
+  }
+
+  if (hasDeduction) {
+    deductionValue = parseInt(deductionInput.value, 10);
+    if (isNaN(deductionValue) || deductionValue < 0) {
+      showCustomAlert("يرجى إدخال قيمة خصم صحيحة.");
+      return;
+    }
+  }
+
+  document.getElementById('team1-color-btn').textContent = teams.team1.name;
+  document.getElementById('team2-color-btn').textContent = teams.team2.name;
+
+  showScreen(teamColorSelectionScreen);
 });
 
-// Color selection logic
+// Team Color Selection Logic
+let currentTeamForColor = '';
+const predefinedColors = [
+  { bg: '#c0392b', text: '#fff' }, { bg: '#2980b9', text: '#fff' }, { bg: '#27ae60', text: '#fff' },
+  { bg: '#f1c40f', text: '#333' }, { bg: '#8e44ad', text: '#fff' }, { bg: '#d35400', text: '#fff' },
+  { bg: '#e84393', text: '#fff' }, // وردي
+  { bg: '#1abc9c', text: '#fff' }, // أخضر فاتح
+  { bg: '#34495e', text: '#fff' }, // كحلي غامق
+  { bg: '#9b59b6', text: '#fff' }, // بنفسجي
+  { bg: '#e67e22', text: '#fff' }, // برتقالي
+  { bg: '#bdc3c7', text: '#333' } // رمادي فاتح
+];
+
 team1ColorBtn.addEventListener('click', () => {
-    const colorPickerModal = document.getElementById('color-picker-modal');
-    const colorGrid = document.getElementById('color-grid');
-    colorGrid.innerHTML = '';
-    const colors = ['#c0392b', '#e74c3c', '#9b59b6', '#3498db', '#2980b9', '#1abc9c', '#2ecc71', '#f1c40f', '#f39c12', '#d35400'];
-    colors.forEach(color => {
-        const colorBox = document.createElement('div');
-        colorBox.classList.add('color-box');
-        colorBox.style.backgroundColor = color;
-        colorBox.addEventListener('click', () => {
-            team1.color = color;
-            team1ColorBtn.style.backgroundColor = color;
-            colorPickerModal.style.display = 'none';
-        });
-        colorGrid.appendChild(colorBox);
-    });
-    document.getElementById('color-picker-cancel-btn').onclick = () => colorPickerModal.style.display = 'none';
-    colorPickerModal.style.display = 'flex';
+  currentTeamForColor = 'team1';
+  showColorPicker();
 });
 
 team2ColorBtn.addEventListener('click', () => {
-    const colorPickerModal = document.getElementById('color-picker-modal');
-    const colorGrid = document.getElementById('color-grid');
-    colorGrid.innerHTML = '';
-    const colors = ['#c0392b', '#e74c3c', '#9b59b6', '#3498db', '#2980b9', '#1abc9c', '#2ecc71', '#f1c40f', '#f39c12', '#d35400'];
-    colors.forEach(color => {
-        const colorBox = document.createElement('div');
-        colorBox.classList.add('color-box');
-        colorBox.style.backgroundColor = color;
-        colorBox.addEventListener('click', () => {
-            team2.color = color;
-            team2ColorBtn.style.backgroundColor = color;
-            colorPickerModal.style.display = 'none';
-        });
-        colorGrid.appendChild(colorBox);
+  currentTeamForColor = 'team2';
+  showColorPicker();
+});
+
+const showColorPicker = () => {
+  colorGrid.innerHTML = '';
+  predefinedColors.forEach(color => {
+    const colorDiv = document.createElement('div');
+    colorDiv.className = 'color-box';
+    colorDiv.style.backgroundColor = color.bg;
+    colorDiv.addEventListener('click', () => {
+      teams[currentTeamForColor].color = color.bg;
+      teams[currentTeamForColor].textColor = color.text;
+      document.getElementById(currentTeamForColor === 'team1' ? 'team1-color-btn' : 'team2-color-btn').style.backgroundColor = color.bg;
+      document.getElementById(currentTeamForColor === 'team1' ? 'team1-color-btn' : 'team2-color-btn').style.color = color.text;
+      colorPickerModal.style.display = 'none';
     });
-    document.getElementById('color-picker-cancel-btn').onclick = () => colorPickerModal.style.display = 'none';
-    colorPickerModal.style.display = 'flex';
+    colorGrid.appendChild(colorDiv);
+  });
+  colorPickerModal.style.display = 'flex';
+};
+
+colorPickerCancelBtn.addEventListener('click', () => {
+  colorPickerModal.style.display = 'none';
 });
 
 continueToGameBtn.addEventListener('click', () => {
-    switchScreen(firstTeamSelectionScreen);
-    whoAnsweredTeam1Btn.textContent = team1.name;
-    whoAnsweredTeam2Btn.textContent = team2.name;
+  if (playMode === 'turnBased') {
+    document.getElementById('first-team-selection-title').textContent = 'منو اللي راح يبلش؟';
+    document.getElementById('team1StartBtn').textContent = teams.team1.name;
+    document.getElementById('team2StartBtn').textContent = teams.team2.name;
+    showScreen(firstTeamSelectionScreen);
+  } else { // answerFirst
+    document.getElementById('first-team-selection-title').textContent = 'مستعدين؟';
+    document.getElementById('first-team-container').innerHTML = `<button id="startPlayGameBtn" class="styled-button">ابدأ</button>`;
+    document.getElementById('startPlayGameBtn').addEventListener('click', startGame);
+    showScreen(firstTeamSelectionScreen);
+  }
 });
 
-
 team1StartBtn.addEventListener('click', () => {
-    currentTeam = team1;
-    startGamePlay();
+  currentPlayer = 'team1';
+  startGame();
 });
 
 team2StartBtn.addEventListener('click', () => {
-    currentTeam = team2;
-    startGamePlay();
+  currentPlayer = 'team2';
+  startGame();
 });
 
-function startGamePlay() {
+const startGame = () => {
+  showScreen(gamePlayScreen);
+  updateGameCategoriesDisplay();
+  updateScoreDisplay();
+  if (playMode === 'turnBased') {
+    updateCurrentTeamName();
+  }
+  // Hide turn-based elements in 'answerFirst' mode
+  document.getElementById('question-actions-turn-based').style.display = playMode === 'turnBased' ? 'flex' : 'none';
+  document.getElementById('question-actions-answer-first').style.display = playMode === 'answerFirst' ? 'flex' : 'none';
+};
+
+// =================== game.js (الجزء الثاني) =====================
+
+const updateGameCategoriesDisplay = () => {
+  const grid = document.getElementById('categories-buttons-grid');
+  grid.innerHTML = '';
+  const pointsValues = [200, 200, 400, 400, 600, 600];
+
+  selectedCatalogs.forEach(catalog => {
+    const catalogItem = document.createElement('div');
+    catalogItem.className = 'category-item';
+
+    catalogItem.innerHTML = `
+      <img src="${catalog.image || 'placeholder.jpg'}" alt="${catalog.name}">
+      <p>${catalog.name}</p>
+      <div class="points-buttons-container">
+        <div class="points-buttons left-side" data-catalog-name="${catalog.name}"></div>
+        <div class="points-buttons right-side" data-catalog-name="${catalog.name}"></div>
+      </div>
+    `;
+
+    const leftPointsDiv = catalogItem.querySelector('.left-side');
+    const rightPointsDiv = catalogItem.querySelector('.right-side');
+
+    const createButtonsForSide = (sideDiv) => {
+      for (let i = 0; i < 6; i++) {
+        const points = pointsValues[i];
+        // Find an available question for this catalog and points value
+        const availableQuestions = catalog.questions.filter(q => q.points === points && !usedQuestions.has(q.question));
+        const question = availableQuestions[0];
+
+        const button = document.createElement('button');
+        button.dataset.points = points;
+        button.textContent = `${points} نقطة`;
+        button.dataset.questionText = question ? question.question : '';
+
+        if (!question) {
+          button.disabled = true;
+          button.classList.add('disabled-btn');
+        } else {
+          button.addEventListener('click', () => {
+            // Mark the question as used immediately and disable the button
+            usedQuestions.add(question.question);
+            button.disabled = true;
+            button.classList.add('disabled-btn');
+            showQuestion(catalog.name, points, question.question);
+          });
+        }
+        sideDiv.appendChild(button);
+      }
+    };
+
+    createButtonsForSide(leftPointsDiv);
+    createButtonsForSide(rightPointsDiv);
+
+    grid.appendChild(catalogItem);
+  });
+
+  if (checkIfAllButtonsDisabled()) {
+    setTimeout(endGame, 1000);
+  }
+};
+
+const checkIfAllButtonsDisabled = () => {
+  const allButtons = document.querySelectorAll('.points-buttons button');
+  for (const button of allButtons) {
+    if (!button.disabled) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const showQuestion = async (catalogName, points, questionText) => {
+  const catalog = selectedCatalogs.find(c => c.name === catalogName);
+  if (!catalog) return;
+
+  const availableQuestion = catalog.questions.find(q => q.points === points && q.question === questionText);
+  if (!availableQuestion) {
+    showCustomAlert("لا توجد أسئلة متاحة في هذا الكتالوج بهذه النقاط.");
+    return;
+  }
+
+  currentPoints = points;
+  currentQuestion = availableQuestion;
+
+  // The question is already marked as used when the button is clicked
+
+  document.getElementById('questionTeamName').textContent = `الفريق الحالي: ${teams[currentPlayer].name}`;
+  // Update the color of the team name
+  document.getElementById('questionTeamName').style.color = teams[currentPlayer].textColor;
+  document.getElementById('questionTeamName').style.backgroundColor = teams[currentPlayer].color;
+
+  const questionContent = document.getElementById('question-content');
+  questionContent.innerHTML = '';
+
+  const questionTextElement = document.createElement('h2');
+  questionTextElement.id = 'question-text';
+  questionTextElement.textContent = currentQuestion.question || '';
+  questionContent.appendChild(questionTextElement);
+
+  if (currentQuestion.questionMedia) {
+    const mediaUrl = await getMediaUrl(currentQuestion.questionMedia);
+    const mediaElement = createMediaElement(mediaUrl);
+    if (mediaElement) {
+      questionContent.appendChild(mediaElement);
+    }
+  }
+
+  showScreen(questionScreen);
+  isChoicesUsed = false;
+  revealChoicesBtn.style.display = 'block';
+  document.getElementById('multiple-choices').innerHTML = '';
+
+  // Show/Hide buttons based on play mode
+  document.getElementById('question-actions-turn-based').style.display = playMode === 'turnBased' ? 'flex' : 'none';
+  document.getElementById('question-actions-answer-first').style.display = playMode === 'answerFirst' ? 'flex' : 'none';
+
+  if (hasTimer) {
+    startTimer();
+  }
+};
+
+const pauseTimer = () => {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+};
+
+const resumeTimer = () => {
+  if (!timerInterval && hasTimer) {
+    startTimer();
+  }
+};
+
+const startTimer = () => {
+  let timeLeft = timerValue;
+  const timerDisplay = document.getElementById('questionTimerDisplay');
+  timerDisplay.textContent = `الوقت المتبقي: ${timeLeft} ثانية`;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `الوقت المتبقي: ${timeLeft} ثانية`;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerUp();
+    }
+  }, 1000);
+};
+
+const timerUp = () => {
+  let message = "انتهى الوقت!";
+  if (hasDeduction) {
+    teams[currentPlayer].score -= deductionValue;
+    message += ` تم خصم ${deductionValue} نقطة.`;
+  }
+  showCustomAlert(message, () => {
     updateScoreDisplay();
-    displayGameCategories();
-    if (playMode === 'turnBased') {
-        currentTeamNameDisplay.textContent = `دور ${currentTeam.name}`;
-        currentTeamNameDisplay.style.backgroundColor = currentTeam.color;
-        currentTeamNameDisplay.style.display = 'block';
-    } else { // answerFirst
-        currentTeamNameDisplay.style.display = 'none';
-    }
-}
+    nextTurn();
+  });
+};
 
-// Question actions (turn-based mode)
-const revealChoicesBtn = document.getElementById('revealChoicesBtn');
-const answerBtn = document.getElementById('answerBtn');
+revealChoicesBtn.addEventListener('click', () => {
+  if (isChoicesUsed) return;
+
+  const deduction = hasDeduction ? deductionValue : (currentPoints / 4);
+
+  showCustomAlert(
+    `هل أنت متأكد؟ سيتم خصم ${deduction} نقطة من نقاط هذا السؤال.`,
+    () => { // onConfirm
+      isChoicesUsed = true;
+      revealChoicesBtn.style.display = 'none';
+      const choices = generateChoices(currentQuestion.answer, currentQuestion.IncorrectChoices);
+      const choicesGrid = document.getElementById('multiple-choices');
+      choicesGrid.innerHTML = '';
+      choices.forEach(choice => {
+        const choiceBtn = document.createElement('button');
+        choiceBtn.textContent = choice;
+        choicesGrid.appendChild(choiceBtn);
+        choiceBtn.addEventListener('click', () => {
+          if (choice === currentQuestion.answer) {
+            if (playMode === 'turnBased') {
+              handleCorrectAnswer();
+            } else {
+              handleCorrectAnswer_AnswerFirst();
+            }
+          } else {
+            if (playMode === 'turnBased') {
+              handleWrongAnswer();
+            } else {
+              handleWrongAnswer_AnswerFirst();
+            }
+          }
+        });
+      });
+    },
+    () => {
+      // لا شيء يحدث، فقط إغلاق النافذة
+    }
+  );
+});
+
+const generateChoices = (correctAnswer, incorrectAnswers) => {
+  let choices = [correctAnswer];
+  let incorrectPool = [];
+
+  if (incorrectAnswers) {
+    let choicesString = '';
+
+    if (typeof incorrectAnswers === 'string') {
+      choicesString = incorrectAnswers;
+    } else if (Array.isArray(incorrectAnswers)) {
+      choicesString = incorrectAnswers.join(',');
+    } else if (typeof incorrectAnswers === 'object' && incorrectAnswers[0]) {
+      choicesString = incorrectAnswers[0];
+    }
+
+    if (choicesString.length > 0) {
+      incorrectPool = choicesString.split(/[،,]/).map(choice => choice.trim()).filter(c => c.length > 0);
+    }
+  }
+
+  while (choices.length < 4 && incorrectPool.length > 0) {
+    const randomIndex = Math.floor(Math.random() * incorrectPool.length);
+    choices.push(incorrectPool.splice(randomIndex, 1)[0]);
+  }
+
+  // Shuffle choices
+  for (let i = choices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [choices[i], choices[j]] = [choices[j], choices[i]];
+  }
+
+  return choices;
+};
+
+const handleCorrectAnswer = () => {
+  const pointsToAdd = isChoicesUsed ? currentPoints - (currentPoints / 4) : currentPoints;
+  teams[currentPlayer].score += pointsToAdd;
+  showCustomAlert("إجابة صحيحة!", () => {
+    updateScoreDisplay();
+    nextTurn();
+  });
+};
+
+const handleWrongAnswer = () => {
+  let message = "إجابة خاطئة.";
+  if (hasDeduction) {
+    teams[currentPlayer].score -= deductionValue;
+    message += ` تم خصم ${deductionValue} نقطة.`;
+  }
+  showCustomAlert(message, () => {
+    updateScoreDisplay();
+    nextTurn();
+  });
+};
+
+// New logic for 'Answer First' mode
+const handleCorrectAnswer_AnswerFirst = () => {
+  pauseTimer();
+  showWhoAnsweredModal(
+    () => { // Team 1 answered
+      teams.team1.score += isChoicesUsed ? currentPoints - (currentPoints / 4) : currentPoints;
+      updateScoreDisplay();
+      updatePointsButtonColor('team1');
+      showScreen(gamePlayScreen);
+    },
+    () => { // Team 2 answered
+      teams.team2.score += isChoicesUsed ? currentPoints - (currentPoints / 4) : currentPoints;
+      updateScoreDisplay();
+      updatePointsButtonColor('team2');
+      showScreen(gamePlayScreen);
+    },
+    () => { // No one answered
+      updatePointsButtonColor('none');
+      showScreen(gamePlayScreen);
+    }
+  );
+};
+
+const handleWrongAnswer_AnswerFirst = () => {
+  pauseTimer();
+  showWhoAnsweredModal(
+    () => { // Team 1 answered
+      let message = `إجابة خاطئة من ${teams.team1.name}.`;
+      if (hasDeduction) {
+        teams.team1.score -= deductionValue;
+        message += ` تم خصم ${deductionValue} نقطة.`;
+      }
+      showCustomAlert(message, () => {
+        updateScoreDisplay();
+        updatePointsButtonColor('none');
+        showScreen(gamePlayScreen);
+      });
+    },
+    () => { // Team 2 answered
+      let message = `إجابة خاطئة من ${teams.team2.name}.`;
+      if (hasDeduction) {
+        teams.team2.score -= deductionValue;
+        message += ` تم خصم ${deductionValue} نقطة.`;
+      }
+      showCustomAlert(message, () => {
+        updateScoreDisplay();
+        updatePointsButtonColor('none');
+        showScreen(gamePlayScreen);
+      });
+    },
+    () => { // No one answered
+      updatePointsButtonColor('none');
+      showScreen(gamePlayScreen);
+    }
+  );
+};
+
+const updatePointsButtonColor = (winningTeam) => {
+  // Find all buttons for the current question's points
+  const buttons = document.querySelectorAll('.points-buttons button[data-points="' + currentPoints + '"]');
+
+  buttons.forEach(button => {
+    // Find the corresponding question for this button
+    const catalogItem = button.closest('.category-item');
+    const catalogName = catalogItem.querySelector('p').textContent;
+    const catalog = selectedCatalogs.find(c => c.name === catalogName);
+    const question = catalog.questions.find(q => q.points === currentPoints && usedQuestions.has(q.question));
+
+    if (question && question.question === currentQuestion.question) {
+      if (winningTeam === 'team1') {
+        button.style.backgroundColor = teams.team1.color;
+        button.style.color = teams.team1.textColor;
+      } else if (winningTeam === 'team2') {
+        button.style.backgroundColor = teams.team2.color;
+        button.style.color = teams.team2.textColor;
+      } else {
+        button.style.backgroundColor = 'var(--secondary-color)';
+      }
+      button.disabled = true;
+      button.classList.add('disabled-btn');
+    }
+  });
+};
+
+answerBtn.addEventListener('click', async () => {
+  pauseTimer();
+
+  const answerContent = document.getElementById('answer-content');
+  answerContent.innerHTML = '';
+
+  const answerTextElement = document.createElement('h2');
+  answerTextElement.id = 'answer-text';
+  answerTextElement.textContent = currentQuestion.answer || '';
+  answerContent.appendChild(answerTextElement);
+
+  if (currentQuestion.answerMedia) {
+    const mediaUrl = await getMediaUrl(currentQuestion.answerMedia);
+    const mediaElement = createMediaElement(mediaUrl);
+    if (mediaElement) {
+      answerContent.appendChild(mediaElement);
+    }
+  }
+
+  showScreen(answerScreen);
+});
+
 challengeBtn.addEventListener('click', () => {
-    document.getElementById('challenge-modal').style.display = 'flex';
+  if (teams[currentPlayer].challenges > 0) {
+    pauseTimer();
+    showChallengeModal(
+      () => {
+        teams[currentPlayer].challenges--;
+        teams[currentPlayer].score += currentPoints;
+        showCustomAlert(`${teams[currentPlayer].name} استخدم تحدي! تم إضافة ${currentPoints} نقطة.`, () => {
+          updateScoreDisplay();
+          nextTurn();
+        });
+      },
+      () => {
+        resumeTimer();
+      }
+    );
+  } else {
+    showCustomAlert("لقد استخدمت كل تحدياتك المتاحة (مرتين فقط لكل فريق).");
+  }
 });
 
-answerBtn.addEventListener('click', () => {
-    displayChoices(window.currentQuestion);
-});
-
-// Question actions (answer-first mode)
-showAnswerFirstBtn.addEventListener('click', () => {
-    whoAnsweredModal.style.display = 'flex';
-});
-
-
-// Who answered modal logic
-whoAnsweredTeam1Btn.addEventListener('click', () => {
-    handleAnswerFirstResult(team1, window.currentQuestion);
-});
-
-whoAnsweredTeam2Btn.addEventListener('click', () => {
-    handleAnswerFirstResult(team2, window.currentQuestion);
-});
-
-whoAnsweredNoneBtn.addEventListener('click', () => {
-    handleAnswerFirstResult(null, window.currentQuestion);
-});
-
-function handleAnswerFirstResult(winningTeam, question) {
-    whoAnsweredModal.style.display = 'none';
-    const pointsBtn = document.getElementById(window.currentQuestionButtonId);
-    
-    if (winningTeam) {
-        showCustomAlert(`${winningTeam.name} أجاب بشكل صحيح!`);
-        updateScore(winningTeam, question.points);
-        pointsBtn.style.backgroundColor = winningTeam.color;
-    } else {
-        showCustomAlert("لم يجب أحد بشكل صحيح.");
-        pointsBtn.style.backgroundColor = '#7f8c8d'; // keep it grey
-    }
-    
-    pointsBtn.disabled = true;
-    showAnswer(question);
-}
-
-
-// Answer screen actions
 correctBtn.addEventListener('click', () => {
-    // This is for manual score update, not used in the automated flow but good for flexibility
-    updateScore(currentTeam, window.currentQuestion.points);
-    switchTurn();
-    checkGameEnd();
+  const pointsToAdd = isChoicesUsed ? currentPoints - (currentPoints / 4) : currentPoints;
+  teams[currentPlayer].score += pointsToAdd;
+  showCustomAlert("إجابة صحيحة!");
+  updateScoreDisplay();
+  nextTurn();
 });
 
 wrongBtn.addEventListener('click', () => {
-    // This is for manual score update
-    if (deductionPoints > 0) {
-        updateScore(currentTeam, -deductionPoints);
-    }
-    switchTurn();
-    checkGameEnd();
+  let message = "إجابة خاطئة.";
+  if (hasDeduction) {
+    teams[currentPlayer].score -= deductionValue;
+    message += ` تم خصم ${deductionValue} نقطة.`;
+  }
+  showCustomAlert(message);
+  updateScoreDisplay();
+  nextTurn();
 });
 
-// End game button
-endGameBtn.addEventListener('click', () => {
-    // Reset game state and return to main screen
-    team1.score = 0;
-    team2.score = 0;
-    currentTeam = team1;
-    selectedCategories = [];
-    allQuestions = [];
-    usedQuestionButtons = new Set();
-    questionsUsedCount = 0;
-    const allButtons = document.querySelectorAll('.points-btn');
-    allButtons.forEach(btn => {
-        btn.disabled = false;
-    });
-    switchScreen(mainScreen);
-});
-
-
-// Toggle timer input
-timerCheckbox.addEventListener('change', () => {
-    timerInputArea.style.display = timerCheckbox.checked ? 'block' : 'none';
-});
-
-deductionCheckbox.addEventListener('change', () => {
-    deductionInputArea.style.display = deductionCheckbox.checked ? 'block' : 'none';
-});
-
-// Initial setup
-window.onload = () => {
-    initFirebase();
+const nextTurn = () => {
+  pauseTimer();
+  currentPlayer = (currentPlayer === 'team1') ? 'team2' : 'team1';
+  updateCurrentTeamName();
+  showScreen(gamePlayScreen);
+  updateGameCategoriesDisplay();
 };
+
+const updateCurrentTeamName = () => {
+  const currentTeamNameEl = document.getElementById('currentTeamName');
+  currentTeamNameEl.textContent = `الفريق الحالي: ${teams[currentPlayer].name}`;
+  currentTeamNameEl.style.color = teams[currentPlayer].textColor;
+  currentTeamNameEl.style.backgroundColor = teams[currentPlayer].color;
+
+  // Update the score display border color for the current team
+  document.getElementById('team1Score').closest('.score-card-small').style.borderColor = (currentPlayer === 'team1') ? teams.team1.color : 'transparent';
+  document.getElementById('team2Score').closest('.score-card-small').style.borderColor = (currentPlayer === 'team2') ? teams.team2.color : 'transparent';
+};
+
+const updateScoreDisplay = () => {
+  document.getElementById('team1Score').textContent = `${teams.team1.name}: ${teams.team1.score} نقطة`;
+  document.getElementById('team2Score').textContent = `${teams.team2.name}: ${teams.team2.score} نقطة`;
+};
+
+const endGame = () => {
+  pauseTimer();
+  showScreen(endGameScreen);
+
+  const endGameTitle = document.getElementById('end-game-title');
+  const winnerNameDisplay = document.getElementById('winner-name-display');
+
+  const team1NameEl = document.getElementById('team1-name-end-screen');
+  const team2NameEl = document.getElementById('team2-name-end-screen');
+  const team1ScoreEl = document.getElementById('team1-final-score');
+  const team2ScoreEl = document.getElementById('team2-final-score');
+  const team1CardEl = document.getElementById('team1-score-card');
+  const team2CardEl = document.getElementById('team2-score-card');
+
+  team1CardEl.classList.remove('winner-card', 'loser-card');
+  team2CardEl.classList.remove('winner-card', 'loser-card');
+
+  team1NameEl.textContent = teams.team1.name;
+  team2NameEl.textContent = teams.team2.name;
+  team1ScoreEl.textContent = `${teams.team1.score} نقطة`;
+  team2ScoreEl.textContent = `${teams.team2.score} نقطة`;
+
+  if (teams.team1.score > teams.team2.score) {
+    endGameTitle.textContent = "تهانينا للفريق الفائز!";
+    winnerNameDisplay.textContent = teams.team1.name;
+    team1CardEl.classList.add('winner-card');
+    team2CardEl.classList.add('loser-card');
+  } else if (teams.team2.score > teams.team1.score) {
+    endGameTitle.textContent = "تهانينا للفريق الفائز!";
+    winnerNameDisplay.textContent = teams.team2.name;
+    team2CardEl.classList.add('winner-card');
+    team1CardEl.classList.add('loser-card');
+  } else {
+    endGameTitle.textContent = "النتيجة تعادل!";
+    winnerNameDisplay.textContent = "لا يوجد فائز";
+    team1CardEl.classList.add('loser-card');
+    team2CardEl.classList.add('loser-card');
+  }
+};
+
+endGameBtn.addEventListener('click', () => {
+  pauseTimer();
+  selectedCatalogs = [];
+  teams = {
+    team1: { name: '', score: 0, challenges: 2, color: '#c0392b', textColor: '#fff' },
+    team2: { name: '', score: 0, challenges: 2, color: '#2980b9', textColor: '#fff' }
+  };
+  usedQuestions = new Set();
+  updateLogo('large');
+  initApp();
+});
+
+const initApp = () => {
+  updateLogo('large');
+  startGameBtn.style.display = 'block';
+  showScreen(mainScreen);
+};
+
+initApp();
+
+}); // end DOMContentLoaded
